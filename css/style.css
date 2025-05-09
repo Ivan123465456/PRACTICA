@@ -1,0 +1,189 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgba(238, 236, 236, 0.418);
+}
+.container {
+    width: 100%;
+}
+
+.section-header {
+    text-align: center;
+    font-family: cursive;
+}
+
+.hidden {
+    display: none;
+}
+
+/* РЕГИСРАЦИЯ НАЧАЛО */
+.registration-block {
+    width: 400px;
+    height: 500px;
+    background-color: #fff;
+    border-radius: 15px;
+    margin: 0 auto;
+    margin-top: 50px;
+    padding: 10px;
+}
+
+.registration-block  h2{ 
+    text-align: center;
+} 
+
+.registration-block input {
+    width: 95%;
+    height: 25px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 0px;
+    background-color: antiquewhite;
+    padding: 8px;
+}
+
+
+.registration-block button {
+    margin-top: 20px;
+    width: 50%;
+    height: 30px;
+    border-radius: 7px;
+    border: 0px;
+    background-color: antiquewhite;
+}
+
+.registration-block .btn-reg {
+    text-align: center;
+}
+
+/* РЕГИСТРАЦИЯ КОНЕЦ */
+
+
+/* АВТОРИЗАЦИЯ НАЧАЛО */
+.authorization-block {
+    width: 400px;
+    height: 350px;
+    background-color: #fff;
+    border-radius: 15px;
+    margin: 0 auto;
+    margin-top: 50px;
+    padding: 10px;
+}
+
+.authorization-block  h2{ 
+    text-align: center;
+} 
+
+.authorization-block input {
+    width: 95%;
+    height: 25px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 0px;
+    background-color: antiquewhite;
+    padding: 8px;
+}
+
+
+.authorization-block button {
+    margin-top: 20px;
+    margin: 10px;
+    width: 40%;
+    height: 30px;
+    border-radius: 7px;
+    border: 0px;
+    background-color: antiquewhite;
+}
+
+.authorization-block .btn-reg {
+    text-align: center;
+}
+
+/* АВТОРИЗАЦИЯ КОНЕЦ */
+
+/* ЛИЧНЫЕ ФАЙЛЫ НАЧАЛО */
+
+.profile {
+    width: 100%;
+    padding: 20px;
+
+}
+
+/* ЛИЧНЫЕ ФАЙЛЫ КОНЕЦ */
+
+.user-files {
+    width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.user-files table {
+    width: 100%;
+}
+
+/* ЗАГРУЗКА ФАЙЛОВ НАЧАЛО */
+
+.upload-container {
+    width: 300px;
+    margin: 0 auto;
+    background-color: #fff;
+    height: 100px;
+    padding: 50px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.upload-container .upload-files{ 
+    margin-top: 20px;
+    margin: 10px;
+    width: 40%;
+    height: 30px;
+    border-radius: 7px;
+    border: 0px;
+    background-color: antiquewhite;
+}
+.uploaded-files {
+    width: 600px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.uploaded-files table {
+    width: 100%;
+}
+
+.btn-upload-file-block {
+    width: 100%;
+    height: 40px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.btn-upload-file {
+    margin-top: 20px;
+    margin: 10px;
+    width: 180px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 7px;
+    border: 0px;
+    background-color: antiquewhite;
+}
+
+.upload-container .btn-to-disk {
+    margin-top: 20px;
+    margin: 10px;
+    width: 180px;
+    height: 40px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 7px;
+    border: 0px;
+    background-color: antiquewhite;
+}
+
+/* ЗАГРУЗКА ФАЙЛОВ КОНЕЦ */
