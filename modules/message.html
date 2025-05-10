@@ -1,0 +1,93 @@
+<div class="Message">
+    <style>
+        .Message {
+            
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            max-width: 600px; /* Изменил с 2200px на более разумное значение */
+            margin: 0 auto;
+            background: #fff;
+            padding: 10px; /* Добавил отступы */
+            box-sizing: border-box;
+        }
+
+        .head {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px; /* Убрал огромные отступы 725px */
+        
+            border-radius: 8px; /* Добавил скругление углов */
+            justify-content: space-between;
+            width: 100%; /* Изменил фиксированную ширину 600px */
+            box-sizing: border-box;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            padding: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+            order: 2;
+        }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            max-width: calc(100% - 40px); /* Адаптивный расчет ширины */
+            order: 1;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            pointer-events: none;
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 30px 8px 35px;
+            border-radius: 18px;
+            border: none;
+            outline: none;
+            background: #f0f2f5;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .search-input::placeholder {
+            color: #707579;
+        }
+
+        .search-input:focus {
+            background: #fff;
+            box-shadow: 0 0 0 1px #0088cc;
+        }
+    </style>
+    <div class="head">
+        <div class="search-container">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 15L11 11M7 13C3.68629 13 1 10.3137 1 7C1 3.68629 3.68629 1 7 1C10.3137 1 13 3.68629 13 7C13 10.3137 10.3137 13 7 13Z" stroke="#707579" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input type="text" name="search" placeholder="Search" class="search-input">
+            <button class="clear-search" style="display: none;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 1L15 15M15 1L1 15" stroke="#707579" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <button class="menu-toggle">
+            <img src="3полоски.png" height="20" alt="Menu">
+        </button>
+    </div>
+</div>

@@ -71,6 +71,21 @@ function onLoadAuth() {
         LoadPage('/modules/registration.html', context, DoRegist);
     });
 
+    // Обработчик кнопки смены цвета
+let color = ["#FFF8DC", "#FFFFFF"];
+let currentColorIndex = 0;
+
+document.getElementById('btn_change').addEventListener('click', function() {
+    
+    document.body.style.background = color[currentColorIndex];
+    
+    currentColorIndex++;
+    
+    if (currentColorIndex >= color.length) {
+        currentColorIndex = 0;
+    }
+});
+
     elementsPage('.authorize').addEventListener('click', function() {
         let req_data = new FormData();
         Email = elementsPage('input[name="email"]').value;
@@ -130,219 +145,13 @@ function DoRegist() {
     });
 }
 
-// пользователь
-function UserFiles() {
-    let req_data = new FormData();
-    req_data.append('token', TOKEN);
-
-    _post({url: `${HOST}/disk/`, data: req_data}, function(response) {
-        try {
-            response = JSON.parse(response);
-            let tableBody = elementsPage('table tbody');
-            tableBody.innerHTML = '';
-
-            for (let i = 0; i < response.length; i++) {
-                let row = document.createElement('tr');
-
-                let CellFile_ID = document.createElement('td');
-                let id_file = response[i].file_id;
-                CellFile_ID.textContent = id_file;
-                row.append(CellFile_ID);
-
-                let cell_name = document.createElement('td');
-                cell_name.textContent = response[i].name;
-                row.append(cell_name);
-
-                // скачивание 
-                let cell_down = document.createElement('td');
-                let btn_down = document.createElement('button');
-                btn_down.textContent = 'скачать файлы';
-                var down = response[i].url;
-                console.log(response[i].url);
-                btn_down.addEventListener('click', function() {
-                    window.location.assign(`${HOST}/${down}`);
-                });
-                cell_down.append(btn_down);
-                row.append(cell_down);
-
-                // удаление 
-                let cell_delete = document.createElement('td');
-                let btn_delete = document.createElement('button');
-                btn_delete.textContent = 'Удалить файл';
-                btn_delete.addEventListener('click', function() {
-                    let delete_data = new FormData();
-                    delete_data.append('token', TOKEN);
-                    delete_data.append('id_file', response[i].file_id);
-                    _post({url: `${HOST}/delete/`, data: delete_data}, function(res) {
-                        try {
-                            res = JSON.parse(res);
-                            console.log(res);
-                            if (res.success) {
-                                row.remove();
-                            } else {
-                                cell_name.textContent = res.message || 'Ошибка удаления';
-                            }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
-                        }
-                    });
-                });
-                cell_delete.append(btn_delete);
-                row.append(cell_delete);
-
-                // изменить файл
-                let cell_changFI = document.createElement('td');
-                let btn_changeFI = createContent('button', 'изменить файл', cell_changFI);
-                btn_changeFI.addEventListener('click', function() {
-                    LoadPage('/modules/file.html', context, function() {
-                        let OldFileName = elementsPage('.oldFileName');
-                        let file_id = elementsPage('.file_id');
-
-                        file_id.textContent = response[i].file_id;
-                        OldFileName.textContent = response[i].name;
-
-                        elementsPage('.back').addEventListener('click', function() {
-                            LoadPage('/modules/profile.html', context, UserFiles);
-                        });
-                        
-                        let btn_changeFI = elementsPage('.btn--new_FileName');
-                        btn_changeFI.addEventListener('click', function() {
-                            let inp = elementsPage('input[name="new_fileName"]').value;
-                            let req_data = new FormData();
-                            req_data.append('name', inp);
-                            req_data.append('id_file', response[i].file_id);
-                            req_data.append('token', TOKEN);
-                            console.log(req_data);
-                            _post({url: `${HOST}/edit/`, data: req_data}, function(res) {
-                                try {
-                                    res = JSON.parse(res);
-                                    console.log(res);
-                                    if (res.success) {
-                                        elementsPage('.message--block').textContent = 'Успешно переименовано';
-                                    } else {
-                                        elementsPage('.message--block').textContent = 'Ошибка';
-                                    }
-                                } catch (e) {
-                                    console.error('Error parsing response:', e);
-                                }
-                            });
-                        });
-                    });
-                });
-                row.append(cell_changFI);
-
-                // изменить права доступа
-                let cell_changAc = document.createElement('td');
-                let btn_changeAc = createContent('button', 'Изменить доступ', cell_changAc);
-                btn_changeAc.addEventListener('click', function() {
-                    LoadPage('/modules/access.html', context, function() {
-                        let req = new FormData();
-                        req.append('token', TOKEN);
-                        _post({url: `${HOST}/disk/`, data: req}, function(response) {
-                            try {
-                                response = JSON.parse(response);
-                                for (let j = 0; j < response.length; j++) {
-                                    if (response[j].file_id == id_file) {
-                                        let array = response[j].access;
-
-                                        for (let k = 0; k < array.length; k++) {
-                                            console.log(array[k]);
-                                            let row = document.createElement('tr');
-                                            let access_email = array[k].email;
-
-                                            row.textContent = access_email;
-                                            elementsPage('table').append(row);
-                                        }
-                                    }
-                                }
-                            } catch (e) {
-                                console.error('Error parsing response:', e);
-                            }
-                        });
-
-                        elementsPage('.name_old_access').textContent = response[i].name;
-                        elementsPage('.id_access').textContent = id_file;
-                        elementsPage('.btn--addAc').addEventListener('click', function() {
-                            let emailAcces = elementsPage('input[name="email_access"]').value;
-                            let req_data = new FormData();
-                            req_data.append('email', emailAcces);
-                            req_data.append('id_file', id_file);
-                            req_data.append('token', TOKEN);
-                            _post({url: `${HOST}/accesses/`, data: req_data}, function(res) {
-                                try {
-                                    res = JSON.parse(res);
-                                    console.log(res);
-                                    elementsPage('table').innerHTML = '';
-                                    for (let l = 0; l < res.length; l++) {
-                                        let row = document.createElement('tr');
-                                        row.textContent = res[l].email;
-                                        elementsPage('table').append(row);
-                                    }
-                                } catch (e) {
-                                    console.error('Error parsing response:', e);
-                                }
-                            });
-                        });
-                        elementsPage('.back').addEventListener('click', function() {
-                            LoadPage('/modules/profile.html', context, UserFiles);
-                        });
-                    });
-                });
-                row.append(cell_changAc);
-                tableBody.append(row);
-            }
-        } catch (e) {
-            console.error('Error parsing response:', e);
-        }
-    });
-    
-    elementsPage('.btn-upload-file').addEventListener('click', function() {
-        LoadPage('/modules/upload.html', context, UploadFiles);
-    });
-
-    
-    
-    elementsPage('.btn-private-file').addEventListener('click', function() {
-        LoadPage('/modules/useraccess.html', context, function() {
-            let req_data = new FormData();
-            req_data.append('token', TOKEN);
-            _post({url: `${HOST}/shared/`, data: req_data}, function(res) {
-                try {
-                    res = JSON.parse(res);
-                    for (let i = 0; i < res.length; i++) {
-                        let row = document.createElement('tr');
-                        let cell_FileID = document.createElement('td');
-                        cell_FileID.textContent = res[i].file_id;
-                        row.append(cell_FileID);
-
-                        let file_name = res[i].name;
-                        let cell_file = document.createElement('td');
-                        cell_file.textContent = file_name;
-                        row.append(cell_file);
-
-                        let cell_down = document.createElement('td');
-                        let btn_down = document.createElement('button');
-                        btn_down.textContent = 'Скачать файл';
-                        btn_down.addEventListener('click', function() {
-                            window.location.assign(`${HOST}/${res[i].url}`);
-                        });
-                        cell_down.append(btn_down);
-                        row.append(cell_down);
+// 
+   function LoadPageMessage(){
+    LoadPage('/message',context,function(){
         
-                        elementsPage('table tbody').append(row);
-                    }
-                } catch (e) {
-                    console.error('Error parsing response:', e);
-                }
-            });
-            
-            elementsPage('.btn-to-disk').addEventListener('click', function() {
-                LoadPage('/modules/profile.html', context, UserFiles);
-            });
-        });
-    });
-}
-
+    })
+   }
+//
 function UploadFiles() {
-   
+    // реализация функции
 }
