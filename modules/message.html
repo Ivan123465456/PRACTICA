@@ -1,93 +1,169 @@
-<div class="Message">
+<div class="telegram-ui">
     <style>
-        .Message {
-            
+        .telegram-ui {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            max-width: 600px; /* Изменил с 2200px на более разумное значение */
-            margin: 0 auto;
-            background: #fff;
-            padding: 10px; /* Добавил отступы */
-            box-sizing: border-box;
+            max-width: 1600px;
+            
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
 
-        .head {
+        .header {
             display: flex;
             align-items: center;
-            padding: 10px 15px; /* Убрал огромные отступы 725px */
-        
-            border-radius: 8px; /* Добавил скругление углов */
-            justify-content: space-between;
-            width: 100%; /* Изменил фиксированную ширину 600px */
-            box-sizing: border-box;
-        }
-
-        .menu-toggle {
-            background: none;
-            border: none;
-            padding: 5px;
-            margin-left: 10px;
-            cursor: pointer;
-            order: 2;
+            padding: 12px 100px;
+            background-color: #1888c0; /* Telegram blue */
+            color: white;
+            position: relative;
         }
 
         .search-container {
             position: relative;
             flex-grow: 1;
-            display: flex;
-            align-items: center;
-            max-width: calc(100% - 40px); /* Адаптивный расчет ширины */
-            order: 1;
+            margin-right: 20px;
         }
 
         .search-icon {
             position: absolute;
-            left: 10px;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8e8e93;
             pointer-events: none;
         }
 
-        .clear-search {
-            position: absolute;
-            right: 10px;
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-        }
-
         .search-input {
+            transform: translate(-70px,0px);
             width: 100%;
-            padding: 8px 30px 8px 35px;
+            padding: 8px 15px 8px 38px;
             border-radius: 18px;
             border: none;
             outline: none;
             background: #f0f2f5;
             font-size: 14px;
             color: #333;
-        }
-
-        .search-input::placeholder {
-            color: #707579;
+            transition: all 0.2s;
         }
 
         .search-input:focus {
-            background: #fff;
-            box-shadow: 0 0 0 1px #0088cc;
+            background: white;
+            box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.3);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #8e8e93;
+            display: none;
+        }
+
+        .menu-toggle {
+            transform: translate(-70px,0);
+            background: none;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-toggle svg {
+            width: 30px;
+            height: 20px;
+        }
+
+        /* Chat list styles */
+        .chat-list {
+            background: #a7a9ac;
+            height: 500px;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e9edef;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .chat-item:hover {
+            background: #f0f2f5;
+        }
+
+        .chat-item.active {
+            background: #e6f2ff;
+        }
+
+        .chat-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: #0088cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+
+        .chat-info {
+            flex-grow: 1;
+        }
+
+        .chat-name {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .chat-preview {
+            font-size: 13px;
+            color: #8e8e93;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: #343436;
+            margin-left: 8px;
         }
     </style>
-    <div class="head">
+
+    <div class="header">
         <div class="search-container">
             <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 15L11 11M7 13C3.68629 13 1 10.3137 1 7C1 3.68629 3.68629 1 7 1C10.3137 1 13 3.68629 13 7C13 10.3137 10.3137 13 7 13Z" stroke="#707579" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M15 15L11 11M7 13C3.68629 13 1 10.3137 1 7C1 3.68629 3.68629 1 7 1C10.3137 1 13 3.68629 13 7C13 10.3137 10.3137 13 7 13Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
-            <input type="text" name="search" placeholder="Search" class="search-input">
-            <button class="clear-search" style="display: none;">
+            <input type="text" name="search" placeholder="Search" class="search-input" id="searchInput">
+            <button class="clear-search" id="clearSearch">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L15 15M15 1L1 15" stroke="#707579" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M1 1L15 15M15 1L1 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                 </svg>
             </button>
         </div>
         <button class="menu-toggle">
-            <img src="3полоски.png" height="20" alt="Menu">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
         </button>
+    </div>
+
+    <div class="chat-list" id="chatList">
+        
     </div>
 </div>
