@@ -16,14 +16,15 @@ function createContent(sel, content, body) {
 
 const HOST = 'http://api-messenger.web-srv.local';
 const context = elementsPage('.content');
-var TOKEN = 'aj3f0gh2di6b149587ec';
-var Email = "";
+var currentUser = {
+    email: "",
+    isAuthenticated: false
+};
 var EddFile = {};
 
 function GetResponse(params, callback) {
     let xhr = new XMLHttpRequest();
     xhr.open('GET', params.url);
-    xhr.setRequestHeader('Authorization', `Bearer ${TOKEN}`);
     xhr.send();
 
     xhr.onreadystatechange = function() {
@@ -41,7 +42,6 @@ function GetResponse(params, callback) {
 function _post(params, callback) {
     let xhr = new XMLHttpRequest();
     xhr.open('POST', params.url);
-    xhr.setRequestHeader('Authorization', `Bearer ${TOKEN}`);
     
     if (params.contentType) {
         xhr.setRequestHeader('Content-Type', params.contentType);
@@ -49,9 +49,9 @@ function _post(params, callback) {
     
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-            if (xhr.status === 200 || xhr.status === 201) {
+            if (xhr.status === 200) {
                 try {
-                    const response = xhr.responseText ? JSON.parse(xhr.responseText) : null;
+                    const response = JSON.parse(xhr.responseText);
                     callback(response);
                 } catch (e) {
                     console.error('Error parsing JSON:', e);
@@ -68,6 +68,11 @@ function _post(params, callback) {
 }
 
 function LoadPage(url, element, callback) {
+    if (!element) {
+        console.error('Target element not found for URL:', url);
+        return;
+    }
+
     let xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.send();
@@ -87,7 +92,20 @@ function LoadPage(url, element, callback) {
     };
 }
 
-LoadPage('/modules/authorization.html', context, onLoadAuth);
+// Проверяем состояние аутентификации
+function checkAuthState() {
+    if (currentUser.isAuthenticated) {
+        LoadPage('/modules/message.html', context, initializeChatPage);
+    } else {
+        LoadPage('/modules/authorization.html', context, onLoadAuth);
+    }
+}
+
+if (context) {
+    checkAuthState();
+} else {
+    console.error('Context element (.content) not found');
+}
 
 // авторизация
 function onLoadAuth() {
@@ -99,34 +117,45 @@ function onLoadAuth() {
     let color = ["#FFF8DC", "#FFFFFF"];
     let currentColorIndex = 0;
 
-     document.getElementById('btn_change').addEventListener('click', function() {
-        document.body.style.background = color[currentColorIndex];
-        currentColorIndex++;
-        if (currentColorIndex >= color.length) {
-            currentColorIndex = 0;
-        }
-    });
+    const changeColorBtn = elementsPage('#btn_change');
+    if (changeColorBtn) {
+        changeColorBtn.addEventListener('click', function() {
+            document.body.style.background = color[currentColorIndex];
+            currentColorIndex = (currentColorIndex + 1) % color.length;
+        });
+    }
 
     elementsPage('.authorize')?.addEventListener('click', function() {
         let req_data = new FormData();
-        Email = elementsPage('input[name="email"]').value;
-
-        req_data.append('email', Email);
-        req_data.append('pass', elementsPage('input[name="password"]').value);
+        const emailInput = elementsPage('input[name="email"]');
+        const passwordInput = elementsPage('input[name="pass"]');
         
-        _post({
-            url: `${HOST}/authorization/`, 
-            data: req_data
-        }, function(response, error) {
+        if (!emailInput || !passwordInput) {
+            showError('Email and password fields are required');
+            return;
+        }
+
+        currentUser.email = emailInput.value.trim();
+        const pass = passwordInput.value.trim();
+        
+        if (!currentUser.email || !pass) {
+            showError('Email and password cannot be empty');
+            return;
+        }
+
+        req_data.append('email', currentUser.email);
+        req_data.append('pass', pass);
+        
+        _post({url: `${HOST}/auth/`, data: req_data}, function(response, error) {
             if (error) {
                 showError(error.message);
                 return;
             }
 
             if (response && response.success) {
-                TOKEN = response.token;
-                console.log('Auth token:', TOKEN);
-                LoadPage('/modules/profile.html', context, UserFiles);
+                currentUser.isAuthenticated = true;
+                console.log('Authorization successful');
+                LoadPage('/modules/message.html', context, initializeChatPage);
             } else {
                 showError(response?.message || 'Authorization failed');
             }
@@ -136,7 +165,6 @@ function onLoadAuth() {
     function showError(message) {
         const errorBlock = elementsPage('.message--block');
         if (errorBlock) {
-            errorBlock.innerHTML = '';
             errorBlock.textContent = message;
         }
     }
@@ -149,56 +177,52 @@ function DoRegist() {
 
     registerBtn.addEventListener('click', function() {
         let req_data = new FormData();
-        Email = elementsPage('input[name="email"]').value;
+        const emailInput = elementsPage('input[name="email"]');
         
-        req_data.append('email', Email);
-        req_data.append('pass', elementsPage('input[name="pass"]').value);
-        req_data.append('name', elementsPage('input[name="name"]').value);
-        req_data.append('fam', elementsPage('input[name="fam"]').value);
-
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(Email)) {
-            showRegError("Пожалуйста, введите корректный адрес электронной почты.");
+        if (!emailInput) {
+            showRegError("Email field is required");
+            return;
+        }
+        
+        currentUser.email = emailInput.value.trim();
+        const pass = elementsPage('input[name="pass"]')?.value.trim();
+        const name = elementsPage('input[name="name"]')?.value.trim();
+        const fam = elementsPage('input[name="fam"]')?.value.trim();
+        const otch = elementsPage('input[name="otch"]')?.value.trim();
+        
+        if (!currentUser.email || !pass || !name || !fam || !otch) {
+            showRegError("All fields are required");
             return;
         }
 
-        _post({
-            url: `${HOST}/registration/`, 
-            data: req_data
-        }, function(response, error) {
+        req_data.append('email', currentUser.email);
+        req_data.append('pass', pass);
+        req_data.append('name', name);
+        req_data.append('fam', fam);
+        req_data.append('otch', otch);
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(currentUser.email)) {
+            showRegError("Please enter a valid email address");
+            return;
+        }
+
+        _post({url: `${HOST}/user/`, data: req_data}, function(response, error) {
             if (error) {
-                showRegError('Registration failed: ' + error.message);
+                showRegError('Server error: ' + error.message);
                 return;
             }
 
             if (response && response.success) {
-                // Авторизация после успешной регистрации
-                let auth_data = new FormData();
-                auth_data.append('email', Email);
-                auth_data.append('password', elementsPage('input[name="pass"]').value);
-                
-                _post({
-                    url: `${HOST}/authorization/`, 
-                    data: auth_data
-                }, function(authResponse, authError) {
-                    if (authError) {
-                        showRegError('Auto-login failed: ' + authError.message);
-                        return;
-                    }
-
-                    if (authResponse && authResponse.success) {
-                        TOKEN = authResponse.token;
-                        LoadPage('/modules/message.html', context, initializeChatPage);
-                    } else {
-                        showRegError(authResponse?.message || 'Auto-login failed');
-                    }
-                });
+                currentUser.isAuthenticated = true;
+                showRegError('Registration successful');
+                LoadPage('/modules/message.html', context, initializeChatPage);
             } else {
                 showRegError(response?.message || 'Registration failed');
             }
         });
     });
-
+    
     function showRegError(message) {
         const btnReg = elementsPage('.btn-reg');
         if (btnReg) {
@@ -210,11 +234,10 @@ function DoRegist() {
 function initializeChatPage() {
     setupChatUI();
     loadChatList();
-    // Остальные функции инициализации
 }
 
 function setupChatUI() {
-    const telegramUI = document.querySelector('telegram-ui');
+    const telegramUI = elementsPage('.telegram-ui');
     if (!telegramUI) return;
 
     if (!elementsPage('.message-container')) {
@@ -231,41 +254,77 @@ function setupChatUI() {
             <button class="send-message">Send</button>
         `;
         telegramUI.appendChild(inputArea);
+        
+        elementsPage('.send-message')?.addEventListener('click', sendMessage);
     }
 }
 
-function loadChatList() {
+function sendMessage() {
+    const input = elementsPage('.message-input');
+    if (!input || !input.value.trim()) return;
+    
+    const message = input.value.trim();
+    input.value = '';
+    
     _post({
-        url: `${HOST}/chats`,
-        contentType: 'application/json'
+        url: `${HOST}/message/send`,
+        contentType: 'application/json',
+        data: JSON.stringify({
+            email: currentUser.email,
+            message: message
+        })
     }, function(response, error) {
+        if (error) {
+            console.error('Failed to send message:', error);
+            return;
+        }
+        
+        if (response && response.success) {
+            loadChatList();
+        } else {
+            console.error('Failed to send message:', response?.message);
+        }
+    });
+}
+
+function loadChatList() {
+    GetResponse({url: `${HOST}/message/list?email=${encodeURIComponent(currentUser.email)}`}, 
+    function(response, error) {
         if (error) {
             console.error('Failed to load chat list:', error);
             return;
         }
 
-        const chatContainer = elementsPage('.message-container');
-        if (!chatContainer) return;
-
-        if (response && Array.isArray(response)) {
-            chatContainer.innerHTML = '';
-            response.forEach(chat => {
-                const chatElement = document.createElement('div');
-                chatElement.className = 'chat-item';
-                chatElement.innerHTML = `
-                    <h3>${chat.name || 'Unnamed Chat'}</h3>
-                    <p>${chat.lastMessage || ''}</p>
-                `;
-                chatContainer.appendChild(chatElement);
-            });
-        } else {
-            chatContainer.innerHTML = '<p>No chats available</p>';
+        try {
+            const chats = JSON.parse(response);
+            const chatList = elementsPage('#chatList');
+            
+            if (chatList) {
+                chatList.innerHTML = '';
+                
+                if (Array.isArray(chats)) {
+                    chats.forEach(chat => {
+                        const chatItem = document.createElement('div');
+                        chatItem.className = 'chat-item';
+                        chatItem.innerHTML = `
+                            <div class="chat-avatar">${chat.name.charAt(0)}</div>
+                            <div class="chat-info">
+                                <div class="chat-name">${chat.name}</div>
+                                <div class="chat-preview">${chat.lastMessage || 'No messages'}</div>
+                            </div>
+                            <div class="chat-time">${chat.time || ''}</div>
+                        `;
+                        chatList.appendChild(chatItem);
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Error parsing chat list:', e);
         }
     });
 }
 
 function UploadFiles() {
-    // Реализация загрузки файлов с обработкой статусов
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.onchange = function(e) {
@@ -274,9 +333,12 @@ function UploadFiles() {
 
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('email', currentUser.email);
 
-        _post({url: `${HOST}/upload`,data: formData},
-            function(response, error) {
+        _post({
+            url: `${HOST}/upload`,
+            data: formData
+        }, function(response, error) {
             if (error) {
                 console.error('Upload failed:', error);
                 return;
@@ -284,11 +346,21 @@ function UploadFiles() {
 
             if (response && response.success) {
                 console.log('File uploaded successfully:', response.fileUrl);
-                EddFile = response.fileInfo;
+                EddFile = response.fileInfo || {};
             } else {
-                console.error('Upload failed:', response?.message);
+                console.error('Upload failed:', response?.message || 'Unknown error');
             }
         });
     };
     fileInput.click();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.pathname.includes('message.html')) {
+        initializeChatPage();
+    }
+});
+
+function UserFiles() {
+    console.log('UserFiles function called');
 }
