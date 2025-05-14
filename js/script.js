@@ -92,7 +92,7 @@ function LoadPage(url, element, callback) {
     };
 }
 
-// Проверяем состояние аутентификации
+/////Проверяем состояние аутентификации///////////////////////////////////////////////////////////////// 
 function checkAuthState() {
     if (currentUser.isAuthenticated) {
         LoadPage('/modules/message.html', context, initializeChatPage);
@@ -107,7 +107,7 @@ if (context) {
     console.error('Context element (.content) not found');
 }
 
-// авторизация
+////авторизация////////////////////////////////////////////////////////////////////////// 
 function onLoadAuth() {
     elementsPage('.go-register')?.addEventListener('click', function() {
         LoadPage('/modules/registration.html', context, DoRegist);
@@ -124,42 +124,55 @@ function onLoadAuth() {
             currentColorIndex = (currentColorIndex + 1) % color.length;
         });
     }
-
+    // обработчик событий кнопки
     elementsPage('.authorize')?.addEventListener('click', function() {
         let req_data = new FormData();
         const emailInput = elementsPage('input[name="email"]');
         const passwordInput = elementsPage('input[name="pass"]');
-        
+
         if (!emailInput || !passwordInput) {
-            showError('Email and password fields are required');
+            showError('Поля электронной почты и пароля обязательны для заполнения.');
             return;
         }
 
-        currentUser.email = emailInput.value.trim();
+        const email = emailInput.value.trim();
         const pass = passwordInput.value.trim();
-        
-        if (!currentUser.email || !pass) {
-            showError('Email and password cannot be empty');
+
+        if (!email || !pass) {
+            showError('Электронная почта и пароль не могут быть пустыми');
             return;
         }
 
-        req_data.append('email', currentUser.email);
+        req_data.append('email', email);
         req_data.append('pass', pass);
-        
-        _post({url: `${HOST}/auth/`, data: req_data}, function(response, error) {
-            if (error) {
-                showError(error.message);
-                return;
-            }
 
-            if (response && response.success) {
-                currentUser.isAuthenticated = true;
-                console.log('Authorization successful');
-                LoadPage('/modules/message.html', context, initializeChatPage);
-            } else {
-                showError(response?.message || 'Authorization failed');
+        let xhr = new XMLHttpRequest();
+        let url = `${HOST}/user/`;
+        xhr.open("POST", url, true);
+
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText);
+                    LoadPage('/modules/message.html', context, initializeChatPage);
+                } else if (xhr.status === 422) {
+                    showError('Неверные данные запроса');
+                } else if (xhr.status === 401) {
+                    showError('Несанкционированный доступ');
+                } else if(xhr.status===403){
+                    showError('Доступ запрещен');
+                }else {
+                    
+                    showError(`Ошибка: ${xhr.status}`);
+                }
             }
-        });
+        };
+
+        xhr.onerror = function() {
+            showError('Ошибка сети при отправке запроса');
+        };
+
+        xhr.send(req_data);
     });
 
     function showError(message) {
@@ -170,7 +183,7 @@ function onLoadAuth() {
     }
 }
 
-// регистрация 
+/////// регистрация /////////////////////////////////////////////////////////////////////  
 function DoRegist() {
     const registerBtn = elementsPage('.register');
     if (!registerBtn) return;
@@ -178,62 +191,80 @@ function DoRegist() {
     registerBtn.addEventListener('click', function() {
         let req_data = new FormData();
         const emailInput = elementsPage('input[name="email"]');
-        
-        if (!emailInput) {
-            showRegError("Email field is required");
-            return;
-        }
-        
-        currentUser.email = emailInput.value.trim();
-        const pass = elementsPage('input[name="pass"]')?.value.trim();
-        const name = elementsPage('input[name="name"]')?.value.trim();
-        const fam = elementsPage('input[name="fam"]')?.value.trim();
-        const otch = elementsPage('input[name="otch"]')?.value.trim();
-        
-        if (!currentUser.email || !pass || !name || !fam || !otch) {
-            showRegError("All fields are required");
+        const passInput = elementsPage('input[name="pass"]');
+        const nameInput = elementsPage('input[name="name"]');
+        const famInput = elementsPage('input[name="fam"]');
+        const otchInput = elementsPage('input[name="otch"]');
+
+        if (!emailInput || !passInput || !nameInput || !famInput || !otchInput) {
+            showRegError("Все поля обязательны для заполнения");
             return;
         }
 
-        req_data.append('email', currentUser.email);
+        const email = emailInput.value.trim(); 
+        const pass = passInput.value.trim();
+        const name = nameInput.value.trim();
+        const fam = famInput.value.trim();
+        const otch = otchInput.value.trim();
+
+        if (!email || !pass || !name || !fam || !otch) {
+            showRegError("Пожалуйста, заполните все поля");
+            return;
+        }
+
+        // Валидация email
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            showRegError("Пожалуйста, введите действительный адрес электронной почты");
+            return;
+        }
+
+        req_data.append('email', email);
         req_data.append('pass', pass);
         req_data.append('name', name);
         req_data.append('fam', fam);
         req_data.append('otch', otch);
 
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(currentUser.email)) {
-            showRegError("Please enter a valid email address");
-            return;
-        }
-
-        _post({url: `${HOST}/user/`, data: req_data}, function(response, error) {
-            if (error) {
-                showRegError('Server error: ' + error.message);
-                return;
-            }
-
-            if (response && response.success) {
-                currentUser.isAuthenticated = true;
-                showRegError('Registration successful');
-                LoadPage('/modules/message.html', context, initializeChatPage);
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${HOST}/user/`);
+   
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const xhr = JSON.parse(xhr.responseText);
+                LoadPage('/modules/message.html', context,  initializeChatPage());
+            } else if (xhr.status === 401) {
+                showRegError('Несанкционированный доступ');
+            } else if (xhr.status === 422) {
+                showRegError('Неверные данные запроса');
+            } else if (xhr.status === 403) {
+                showRegError('Доступ запрещен');
             } else {
-                showRegError(response?.message || 'Registration failed');
+                showRegError(`Ошибка регистрации: ${xhr.status}`);
             }
-        });
+        };
+
+        xhr.onerror = function() {
+            showRegError('Ошибка сети во время регистрации');
+        };
+
+        xhr.send(req_data);
     });
-    
+
     function showRegError(message) {
-        const btnReg = elementsPage('.btn-reg');
+        const btnReg = elementsPage('.message--block');
         if (btnReg) {
             btnReg.textContent = message;
         }
     }
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
 function initializeChatPage() {
     setupChatUI();
     loadChatList();
+    sendMessage();
+    UploadFiles();
 }
 
 function setupChatUI() {
@@ -266,10 +297,7 @@ function sendMessage() {
     const message = input.value.trim();
     input.value = '';
     
-    _post({
-        url: `${HOST}/message/send`,
-        contentType: 'application/json',
-        data: JSON.stringify({
+    _post({url: `${HOST}/message/send`,contentType: 'application/json',data: JSON.stringify({
             email: currentUser.email,
             message: message
         })
@@ -335,10 +363,7 @@ function UploadFiles() {
         formData.append('file', file);
         formData.append('email', currentUser.email);
 
-        _post({
-            url: `${HOST}/upload`,
-            data: formData
-        }, function(response, error) {
+        _post({url: `${HOST}/upload`,data: formData}, function(response, error) {
             if (error) {
                 console.error('Upload failed:', error);
                 return;
