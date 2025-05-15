@@ -1,29 +1,51 @@
 <div class="telegram-ui">
     <style>
-        .telegram-ui {
+  
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f5f5f5;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            max-width: 400px;
+        }
+        
+        .telegram-ui {
+            display: flex;
+            max-width: 1200px;
+            height: 800px;
             margin: 20px auto;
             background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
-
+        
+        /* Сайдбар с чатами */
+        .sidebar {
+            width: 350px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e1e1e1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Шапка с поиском */
         .header {
             display: flex;
             align-items: center;
             padding: 12px 16px;
-            background-color: #1888c0; /* Telegram blue */
+            background-color: #0088cc;
             color: white;
         }
-
+        
         .search-container {
             position: relative;
             flex-grow: 1;
-            margin-right: 12px;
         }
-
+        
         .search-icon {
             position: absolute;
             left: 12px;
@@ -32,134 +54,378 @@
             color: #8e8e93;
             pointer-events: none;
         }
-
+        
         .search-input {
             width: 100%;
             padding: 8px 15px 8px 38px;
             border-radius: 18px;
             border: none;
             outline: none;
-            background: #f0f2f5;
+            background: rgba(255, 255, 255, 0.2);
             font-size: 14px;
-            color: #333;
+            color: white;
             transition: all 0.2s;
         }
-
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
         .search-input:focus {
-            background: white;
-            box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.3);
+            background: rgba(255, 255, 255, 0.3);
         }
-
-        .clear-search {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            color: #8e8e93;
-            display: none;
-        }
-
+        
         .menu-toggle {
             background: none;
             border: none;
-            padding: 5px;
-            cursor: pointer;
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-left: 10px;
+            cursor: pointer;
         }
-
-        .menu-toggle svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* Chat list styles */
+        
+        /* Список чатов */
         .chat-list {
-            background: #f8f9fa;
-            height: 500px;
+            flex-grow: 1;
             overflow-y: auto;
         }
-
+        
         .chat-item {
             display: flex;
             padding: 12px 16px;
-            border-bottom: 1px solid #e9edef;
+            border-bottom: 1px solid #e1e1e1;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background-color 0.2s;
         }
-
+        
         .chat-item:hover {
-            background: #f0f2f5;
+            background: #e6e6e6;
         }
-
+        
         .chat-item.active {
-            background: #e6f2ff;
+            background: #e1f3fb;
         }
-
+        
         .chat-avatar {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            background-color: #0088cc;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
+            object-fit: cover;
             margin-right: 12px;
         }
-
+        
         .chat-info {
             flex-grow: 1;
+            overflow: hidden;
         }
-
+        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
         .chat-name {
             font-weight: 500;
             color: #333;
-            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
+        
+        .chat-time {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        
         .chat-preview {
+            display: flex;
             font-size: 13px;
             color: #8e8e93;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        .chat-time {
+        
+        .chat-preview-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Основное окно чата */
+        .chat-window {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #e6ebee;
+        }
+        
+        .chat-header {
+            padding: 12px 16px;
+            background-color: #0088cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        
+        .chat-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+        
+        .chat-header-info {
+            flex-grow: 1;
+        }
+        
+        .chat-header-name {
+            font-weight: 500;
+        }
+        
+        .chat-header-status {
             font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            padding: 16px;
+            overflow-y: auto;
+            background-image: url('https://web.telegram.org/a/chat-bg-pattern-light.png');
+            background-color: #e6ebee;
+        }
+        
+        .message {
+            max-width: 70%;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message-incoming {
+            background-color: white;
+            align-self: flex-start;
+            border-top-left-radius: 0;
+        }
+        
+        .message-outgoing {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-top-right-radius: 0;
+            margin-left: auto;
+        }
+        
+        .message-time {
+            font-size: 11px;
             color: #8e8e93;
-            margin-left: 8px;
+            text-align: right;
+            margin-top: 4px;
+        }
+        
+        .message-input-container {
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #e1e1e1;
+            outline: none;
+            font-size: 14px;
+            resize: none;
+            max-height: 100px;
+        }
+        
+        .send-button {
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Иконки */
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Пустое состояние чата */
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8e8e93;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .empty-chat-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
         }
     </style>
 
-    <div class="header">
-        <div class="search-container">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 15L11 11M7 13C3.68629 13 1 10.3137 1 7C1 3.68629 3.68629 1 7 1C10.3137 1 13 3.68629 13 7C13 10.3137 10.3137 13 7 13Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <input type="text" name="search" placeholder="Search" class="search-input" id="searchInput">
-            <button class="clear-search" id="clearSearch">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 1L15 15M15 1L1 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Сайдбар с чатами -->
+    <div class="sidebar">
+        <div class="header">
+            <div class="search-container">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 15L11 11M7 13C3.68629 13 1 10.3137 1 7C1 3.68629 3.68629 1 7 1C10.3137 1 13 3.68629 13 7C13 10.3137 10.3137 13 7 13Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input type="text" name="search" placeholder="Search" class="search-input" id="searchInput">
+            </div>
+            <button class="menu-toggle">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
             </button>
         </div>
-        <button class="menu-toggle">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </button>
+        
+        <div class="chat-list">
+            <!-- Чат 1 - активный -->
+            <div class="chat-item active">
+                <img src="img/free-icon-user-1946429.png" alt="User Avatar" class="chat-avatar">
+                <div class="chat-info">
+                    <div class="chat-header">
+                        <div class="chat-name">Петя</div>
+                        <div class="chat-time">12:30</div>
+                    </div>
+                    <div class="chat-preview">
+                        <div class="chat-preview-text">Привет, как дела?</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Чат 2 -->
+            <div class="chat-item">
+                <img src="img/free-icon-user-1946429.png" alt="User Avatar" class="chat-avatar">
+                <div class="chat-info">
+                    <div class="chat-header">
+                        <div class="chat-name">Маша</div>
+                        <div class="chat-time">11:45</div>
+                    </div>
+                    <div class="chat-preview">
+                        <div class="chat-preview-text">Давай встретимся завтра</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Чат 3 -->
+            <div class="chat-item">
+                <img src="img/free-icon-user-1946429.png" alt="User Avatar" class="chat-avatar">
+                <div class="chat-info">
+                    <div class="chat-header">
+                        <div class="chat-name">Алексей</div>
+                        <div class="chat-time">10:20</div>
+                    </div>
+                    <div class="chat-preview">
+                        <div class="chat-preview-text">Отправил тебе файл с документами</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Чат 4 -->
+            <div class="chat-item">
+                <img src="img/free-icon-user-1946429.png" alt="User Avatar" class="chat-avatar">
+                <div class="chat-info">
+                    <div class="chat-header">
+                        <div class="chat-name">Ольга</div>
+                        <div class="chat-time">Вчера</div>
+                    </div>
+                    <div class="chat-preview">
+                        <div class="chat-preview-text">Спасибо за помощь!</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Чат 5 -->
+            <div class="chat-item">
+                <img src="img/free-icon-user-1946429.png" alt="User Avatar" class="chat-avatar">
+                <div class="chat-info">
+                    <div class="chat-header">
+                        <div class="chat-name">Рабочая группа</div>
+                        <div class="chat-time">Пт</div>
+                    </div>
+                    <div class="chat-preview">
+                        <div class="chat-preview-text">Иван: Я закончил свою часть проекта</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="chat-list" id="chatList">
-       
+    
+    <!-- Окно чата -->
+    <div class="chat-window">
+        <!-- Шапка чата -->
+        <div class="chat-header">
+            <img src="img/free-icon-user-1946429.png" alt="User Avatar" class="chat-header-avatar">
+            <div class="chat-header-info">
+                <div class="chat-header-name">Петя</div>
+                <div class="chat-header-status">был(а) в сети 5 минут назад</div>
+            </div>
+        </div>
+        
+        <!-- Сообщения -->
+        <div class="chat-messages">
+            <!-- Входящее сообщение -->
+            <div class="message message-incoming">
+                Привет! Как дела?
+                <div class="message-time">12:30</div>
+            </div>
+            
+            <!-- Исходящее сообщение -->
+            <div class="message message-outgoing">
+                Привет! Все отлично, спасибо
+                <div class="message-time">12:32</div>
+            </div>
+            
+            <!-- Входящее сообщение -->
+            <div class="message message-incoming">
+                Что планируешь делать на выходных? Может сходим куда-нибудь?
+                <div class="message-time">12:33</div>
+            </div>
+            
+            <!-- Исходящее сообщение -->
+            <div class="message message-outgoing">
+                Звучит отлично! Я как раз свободен в субботу. Есть какие-то идеи?
+                <div class="message-time">12:35</div>
+            </div>
+            
+            <!-- Входящее сообщение -->
+            <div class="message message-incoming">
+                Может сходим в новый ресторан в центре? Я слышал, там отличная кухня.
+                <div class="message-time">12:36</div>
+            </div>
+        </div>
+        
+        <!-- Поле ввода сообщения -->
+        <div class="message-input-container">
+            <textarea class="message-input" placeholder="Напишите сообщение..."></textarea>
+            <button class="send-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
     </div>
 </div>

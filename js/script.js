@@ -16,6 +16,7 @@ function createContent(sel, content, body) {
 
 const HOST = 'http://api-messenger.web-srv.local';
 const context = elementsPage('.content');
+let TOKEN = ''; 
 var currentUser = {
     email: "",
     isAuthenticated: false
@@ -92,12 +93,18 @@ function LoadPage(url, element, callback) {
     };
 }
 
+//загрузка страницы авторизации 
 /////Проверяем состояние аутентификации///////////////////////////////////////////////////////////////// 
 function checkAuthState() {
-    if (currentUser.isAuthenticated) {
-        LoadPage('/modules/message.html', context, initializeChatPage);
-    } else {
+    // Проверяем наличие токена в localStorage
+    const savedToken = localStorage.getItem('authToken');
+    if (savedToken) {
+        TOKEN = savedToken;
+        currentUser.isAuthenticated = true;
+        currentUser.email = localStorage.getItem('userEmail') || "";
         LoadPage('/modules/authorization.html', context, onLoadAuth);
+    } else {
+        LoadPage('/modules/message.html', context, initializeChatPage);
     }
 }
 
@@ -124,6 +131,7 @@ function onLoadAuth() {
             currentColorIndex = (currentColorIndex + 1) % color.length;
         });
     }
+
     // обработчик событий кнопки
     elementsPage('.authorize')?.addEventListener('click', function() {
         let req_data = new FormData();
@@ -147,14 +155,23 @@ function onLoadAuth() {
         req_data.append('pass', pass);
 
         let xhr = new XMLHttpRequest();
-        let url = `${HOST}/user/`;
+        let url = `${HOST}/auth/`;
         xhr.open("POST", url, true);
 
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     const response = JSON.parse(xhr.responseText);
-                    LoadPage('/modules/message.html', context, initializeChatPage);
+                    if (response.token) {
+                        TOKEN = response.token;
+                        localStorage.setItem('authToken', TOKEN);
+                        localStorage.setItem('userEmail', email);
+                        currentUser.email = email;
+                        currentUser.isAuthenticated = true;
+                        LoadPage('/modules/message.html', context, initializeChatPage);
+                    } else {
+                        showError('Токен не получен в ответе');
+                    }
                 } else if (xhr.status === 422) {
                     showError('Неверные данные запроса');
                 } else if (xhr.status === 401) {
@@ -162,7 +179,6 @@ function onLoadAuth() {
                 } else if(xhr.status===403){
                     showError('Доступ запрещен');
                 }else {
-                    
                     showError(`Ошибка: ${xhr.status}`);
                 }
             }
@@ -230,8 +246,17 @@ function DoRegist() {
    
         xhr.onload = function() {
             if (xhr.status === 200) {
-                const xhr = JSON.parse(xhr.responseText);
-                LoadPage('/modules/message.html', context,  initializeChatPage());
+                const response = JSON.parse(xhr.responseText);
+                if (response.token) {
+                    TOKEN = response.token;
+                    localStorage.setItem('authToken', TOKEN);
+                    localStorage.setItem('userEmail', email);
+                    currentUser.email = email;
+                    currentUser.isAuthenticated = true;
+                    LoadPage('/modules/message.html', context, initializeChatPage);
+                } else {
+                    showRegError('Токен не получен при регистрации');
+                }
             } else if (xhr.status === 401) {
                 showRegError('Несанкционированный доступ');
             } else if (xhr.status === 422) {
@@ -258,134 +283,32 @@ function DoRegist() {
     }
 }
 
-
 ////////////////////////////конец регистрации////////////////////////////////////////////////////
-function initializeChatPage() {
-    setupChatUI();
-    loadChatList();
-    sendMessage();
-    UploadFiles();
-}
-
-function setupChatUI() {
-    const telegramUI = elementsPage('.telegram-ui');
-    if (!telegramUI) return;
-
-    if (!elementsPage('.message-container')) {
-        const messageArea = document.createElement('div');
-        messageArea.className = 'message-container';
-        telegramUI.appendChild(messageArea);
-    }
-    
-    if (!elementsPage('.message-input-area')) {
-        const inputArea = document.createElement('div');
-        inputArea.className = 'message-input-area';
-        inputArea.innerHTML = `
-            <input type="text" class="message-input" placeholder="Type a message...">
-            <button class="send-message">Send</button>
-        `;
-        telegramUI.appendChild(inputArea);
-        
-        elementsPage('.send-message')?.addEventListener('click', sendMessage);
-    }
-}
-
-function sendMessage() {
-    const input = elementsPage('.message-input');
-    if (!input || !input.value.trim()) return;
-    
-    const message = input.value.trim();
-    input.value = '';
-    
-    _post({url: `${HOST}/message/send`,contentType: 'application/json',data: JSON.stringify({
-            email: currentUser.email,
-            message: message
-        })
-    }, function(response, error) {
-        if (error) {
-            console.error('Failed to send message:', error);
-            return;
-        }
-        
-        if (response && response.success) {
-            loadChatList();
-        } else {
-            console.error('Failed to send message:', response?.message);
-        }
-    });
-}
-
-function loadChatList() {
-    GetResponse({url: `${HOST}/message/list?email=${encodeURIComponent(currentUser.email)}`}, 
-    function(response, error) {
-        if (error) {
-            console.error('Failed to load chat list:', error);
-            return;
-        }
-
-        try {
-            const chats = JSON.parse(response);
-            const chatList = elementsPage('#chatList');
-            
-            if (chatList) {
-                chatList.innerHTML = '';
-                
-                if (Array.isArray(chats)) {
-                    chats.forEach(chat => {
-                        const chatItem = document.createElement('div');
-                        chatItem.className = 'chat-item';
-                        chatItem.innerHTML = `
-                            <div class="chat-avatar">${chat.name.charAt(0)}</div>
-                            <div class="chat-info">
-                                <div class="chat-name">${chat.name}</div>
-                                <div class="chat-preview">${chat.lastMessage || 'No messages'}</div>
-                            </div>
-                            <div class="chat-time">${chat.time || ''}</div>
-                        `;
-                        chatList.appendChild(chatItem);
-                    });
-                }
-            }
-        } catch (e) {
-            console.error('Error parsing chat list:', e);
-        }
-    });
-}
-
-function UploadFiles() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.onchange = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('email', currentUser.email);
-
-        _post({url: `${HOST}/upload`,data: formData}, function(response, error) {
-            if (error) {
-                console.error('Upload failed:', error);
-                return;
-            }
-
-            if (response && response.success) {
-                console.log('File uploaded successfully:', response.fileUrl);
-                EddFile = response.fileInfo || {};
-            } else {
-                console.error('Upload failed:', response?.message || 'Unknown error');
-            }
-        });
-    };
-    fileInput.click();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.location.pathname.includes('message.html')) {
-        initializeChatPage();
-    }
-});
 
 function UserFiles() {
     console.log('UserFiles function called');
+}
+
+function initializeChatPage() {
+  
+    if (!currentUser.isAuthenticated || !TOKEN) {
+        checkAuthState();
+        return;
+    }
+    
+ 
+    console.log('Chat page initialized for user:', currentUser.email);
+    
+    // Пример: добавление обработчика выхода
+    const logoutBtn = elementsPage('.logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
+            TOKEN = '';
+            currentUser.isAuthenticated = false;
+            currentUser.email = '';
+            LoadPage('/modules/authorization.html', context, onLoadAuth);
+        });
+    }
 }
