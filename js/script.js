@@ -98,6 +98,7 @@ function LoadPage(url, element, callback) {
 function checkAuthState() {
     // Проверяем наличие токена в localStorage
     const savedToken = localStorage.getItem('authToken');
+    
     if (savedToken) {
         TOKEN = savedToken;
         currentUser.isAuthenticated = true;
@@ -120,7 +121,7 @@ function onLoadAuth() {
         LoadPage('/modules/registration.html', context, DoRegist);
     });
 
-    // Обработчик кнопки смены цвета
+    // Обработчик кнопки смены цвета (не трогаем)//////////////
     let color = ["#FFF8DC", "#FFFFFF"];
     let currentColorIndex = 0;
 
@@ -131,14 +132,14 @@ function onLoadAuth() {
             currentColorIndex = (currentColorIndex + 1) % color.length;
         });
     }
-
+////////////////////////////////////////////////////////////
     // обработчик событий кнопки
-    elementsPage('.authorize')?.addEventListener('click', function() {
+    elementsPage('.authorize').addEventListener('click', function() {
         let req_data = new FormData();
         const emailInput = elementsPage('input[name="email"]');
         const passwordInput = elementsPage('input[name="pass"]');
 
-        if (!emailInput || !passwordInput) {
+        if (!emailInput.value || !passwordInput.value) {
             showError('Поля электронной почты и пароля обязательны для заполнения.');
             return;
         }
@@ -158,6 +159,7 @@ function onLoadAuth() {
         let url = `${HOST}/auth/`;
         xhr.open("POST", url, true);
 
+// исправть здесь
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
@@ -165,13 +167,13 @@ function onLoadAuth() {
                     if (response.token) {
                         TOKEN = response.token;
                         localStorage.setItem('authToken', TOKEN);
-                        localStorage.setItem('userEmail', email);
-                        currentUser.email = email;
                         currentUser.isAuthenticated = true;
                         LoadPage('/modules/message.html', context, initializeChatPage);
                     } else {
                         showError('Токен не получен в ответе');
                     }
+ 
+// исправление 
                 } else if (xhr.status === 422) {
                     showError('Неверные данные запроса');
                 } else if (xhr.status === 401) {
@@ -199,7 +201,7 @@ function onLoadAuth() {
     }
 }
 
-/////// регистрация /////////////////////////////////////////////////////////////////////  
+// В функции DoRegist изменим обработчик успешной регистрации:
 function DoRegist() {
     const registerBtn = elementsPage('.register');
     if (!registerBtn) return;
@@ -228,7 +230,6 @@ function DoRegist() {
             return;
         }
 
-        // Валидация email
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(email)) {
             showRegError("Пожалуйста, введите действительный адрес электронной почты");
@@ -248,15 +249,30 @@ function DoRegist() {
             if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
                 if (response.token) {
-                    TOKEN = response.token;
-                    localStorage.setItem('authToken', TOKEN);
-                    localStorage.setItem('userEmail', email);
-                    currentUser.email = email;
-                    currentUser.isAuthenticated = true;
-                    LoadPage('/modules/message.html', context, initializeChatPage);
-                } else {
-                    showRegError('Токен не получен при регистрации');
-                }
+                   
+                    localStorage.setItem('regEmail', email);
+                    localStorage.setItem('regPass', pass);
+                    
+                    // Переходим на страницу авторизации
+                    LoadPage('/modules/authorization.html', context, function() {
+                       
+                        const emailInput = elementsPage('input[name="email"]');
+                        const passInput = elementsPage('input[name="pass"]');
+                     
+                        
+                        if (emailInput && passInput) {
+                            emailInput.value = localStorage.getItem('regEmail') || '';
+                            passInput.value = localStorage.getItem('regPass') || '';
+                            
+                            
+                            
+                        }
+                        
+                        // Очищаем временные данные
+                        localStorage.removeItem('regEmail');
+                        localStorage.removeItem('regPass');
+                    });
+                } 
             } else if (xhr.status === 401) {
                 showRegError('Несанкционированный доступ');
             } else if (xhr.status === 422) {
@@ -282,7 +298,6 @@ function DoRegist() {
         }
     }
 }
-
 ////////////////////////////конец регистрации////////////////////////////////////////////////////
 
 function UserFiles() {
