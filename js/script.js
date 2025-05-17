@@ -15,6 +15,7 @@ function createContent(sel, content, body) {
 }
 
 const HOST = 'http://api-messenger.web-srv.local';
+// http://messenger.web-srv.local/ ссылка на message акулы
 const context = elementsPage('.content');
 let TOKEN = ''; 
 var currentUser = {
@@ -23,6 +24,7 @@ var currentUser = {
 };
 var EddFile = {};
 
+// получаем запрос
 function GetResponse(params, callback) {
     let xhr = new XMLHttpRequest();
     xhr.open('GET', params.url);
@@ -105,7 +107,7 @@ function checkAuthState() {
         currentUser.email = localStorage.getItem('userEmail') || "";
         LoadPage('/modules/authorization.html', context, onLoadAuth);
     } else {
-        LoadPage('/modules/message.html', context, initializeChatPage);
+        LoadPage('/modules/massage.html', context, initializeChatPage);
     }
 }
 
@@ -114,6 +116,21 @@ if (context) {
 } else {
     console.error('Context element (.content) not found');
 }
+
+function getToken() {
+    let token = localStorage.getItem("authToken",TOKEN);
+    if (token) {
+        return token
+    } else {
+        return '';
+    }
+}
+
+function setToken(token) {
+    localStorage.setItem("authToken", token);
+}
+
+
 
 ////авторизация////////////////////////////////////////////////////////////////////////// 
 function onLoadAuth() {
@@ -134,7 +151,11 @@ function onLoadAuth() {
     }
 ////////////////////////////////////////////////////////////
     // обработчик событий кнопки
+
+ 
     elementsPage('.authorize').addEventListener('click', function() {
+
+        
         let req_data = new FormData();
         const emailInput = elementsPage('input[name="email"]');
         const passwordInput = elementsPage('input[name="pass"]');
@@ -150,37 +171,52 @@ function onLoadAuth() {
         if (!email || !pass) {
             showError('Электронная почта и пароль не могут быть пустыми');
             return;
-        }
+        };
 
         req_data.append('email', email);
         req_data.append('pass', pass);
 
+        
+
         let xhr = new XMLHttpRequest();
         let url = `${HOST}/auth/`;
         xhr.open("POST", url, true);
-
-// исправть здесь
+        
         xhr.onreadystatechange = function() {
             if (xhr.readyState === 4) {
+
+                console.log('Status:',xhr.status);
+                console.log('Response:',xhr.response);
+                console.log('Header:',xhr.getAllResponseHeaders());
                 if (xhr.status === 200) {
                     const response = JSON.parse(xhr.responseText);
+                    console.log('Response:',response);
+
                     if (response.token) {
+
+                        // Сохраняем токен и информацию о пользователе
                         TOKEN = response.token;
                         localStorage.setItem('authToken', TOKEN);
+                        localStorage.setItem('userEmail', email);
+                        
                         currentUser.isAuthenticated = true;
-                        LoadPage('/modules/message.html', context, initializeChatPage);
+                        currentUser.email = email;
+                 
+                   
+                       
+                        LoadPage('/modules/massage.html', context, initializeChatPage);
+                        console.log('текущий токен:', TOKEN);
+                        onLoadAuth;
                     } else {
-                        showError('Токен не получен в ответе');
+                        showError('Токен не получен в ответе', JSON.stringify(response));
                     }
- 
-// исправление 
                 } else if (xhr.status === 422) {
                     showError('Неверные данные запроса');
                 } else if (xhr.status === 401) {
                     showError('Несанкционированный доступ');
                 } else if(xhr.status===403){
                     showError('Доступ запрещен');
-                }else {
+                } else {
                     showError(`Ошибка: ${xhr.status}`);
                 }
             }
