@@ -1,4 +1,9 @@
 // начало
+function parseJwt(){
+    var ba
+}
+
+
 function elementsPage(sel) {
     return document.querySelector(sel);
 }
@@ -15,7 +20,6 @@ function createContent(sel, content, body) {
 }
 
 const HOST = 'http://api-messenger.web-srv.local';
-// http://messenger.web-srv.local/ ссылка на message акулы
 const context = elementsPage('.content');
 let TOKEN = ''; 
 var currentUser = {
@@ -95,19 +99,20 @@ function LoadPage(url, element, callback) {
     };
 }
 
-//загрузка страницы авторизации 
 /////Проверяем состояние аутентификации///////////////////////////////////////////////////////////////// 
 function checkAuthState() {
-    // Проверяем наличие токена в localStorage
+    
     const savedToken = localStorage.getItem('authToken');
     
     if (savedToken) {
+         
         TOKEN = savedToken;
         currentUser.isAuthenticated = true;
-        currentUser.email = localStorage.getItem('userEmail') || "";
-        LoadPage('/modules/authorization.html', context, onLoadAuth);
-    } else {
+        currentUser.email = localStorage.getItem('userEmail');
+       
         LoadPage('/modules/massage.html', context, initializeChatPage);
+    } else{
+         LoadPage('/modules/authorization.html', context, onLoadAuth);
     }
 }
 
@@ -117,20 +122,31 @@ if (context) {
     console.error('Context element (.content) not found');
 }
 
+//получем токен
 function getToken() {
-    let token = localStorage.getItem("authToken",TOKEN);
+    let token = localStorage.getItem("authToken");
     if (token) {
-        return token
+        return token;
     } else {
         return '';
     }
 }
 
+//отправляем токен 
 function setToken(token) {
     localStorage.setItem("authToken", token);
+    TOKEN = token;
 }
 
-
+//выход из авторизации
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userEmail');
+    TOKEN = '';
+    currentUser.isAuthenticated = false;
+    currentUser.email = '';
+    checkAuthState();
+}
 
 ////авторизация////////////////////////////////////////////////////////////////////////// 
 function onLoadAuth() {
@@ -138,7 +154,7 @@ function onLoadAuth() {
         LoadPage('/modules/registration.html', context, DoRegist);
     });
 
-    // Обработчик кнопки смены цвета (не трогаем)//////////////
+    // Обработчик кнопки смены цвета
     let color = ["#FFF8DC", "#FFFFFF"];
     let currentColorIndex = 0;
 
@@ -149,85 +165,76 @@ function onLoadAuth() {
             currentColorIndex = (currentColorIndex + 1) % color.length;
         });
     }
-////////////////////////////////////////////////////////////
-    // обработчик событий кнопки
 
- 
-    elementsPage('.authorize').addEventListener('click', function() {
+    // обработчик событий кнопки авторизации
+    const authButton = elementsPage('.authorize');
+    if (authButton) {
+        authButton.addEventListener('click', function() {
+            let req_data = new FormData();
+            const emailInput = elementsPage('input[name="email"]');
+            const passwordInput = elementsPage('input[name="pass"]');
 
-        
-        let req_data = new FormData();
-        const emailInput = elementsPage('input[name="email"]');
-        const passwordInput = elementsPage('input[name="pass"]');
-
-        if (!emailInput.value || !passwordInput.value) {
-            showError('Поля электронной почты и пароля обязательны для заполнения.');
-            return;
-        }
-
-        const email = emailInput.value.trim();
-        const pass = passwordInput.value.trim();
-
-        if (!email || !pass) {
-            showError('Электронная почта и пароль не могут быть пустыми');
-            return;
-        };
-
-        req_data.append('email', email);
-        req_data.append('pass', pass);
-
-        
-
-        let xhr = new XMLHttpRequest();
-        let url = `${HOST}/auth/`;
-        xhr.open("POST", url, true);
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-
-                console.log('Status:',xhr.status);
-                console.log('Response:',xhr.response);
-                console.log('Header:',xhr.getAllResponseHeaders());
-                if (xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    console.log('Response:',response);
-
-                    if (response.token) {
-
-                        // Сохраняем токен и информацию о пользователе
-                        TOKEN = response.token;
-                        localStorage.setItem('authToken', TOKEN);
-                        localStorage.setItem('userEmail', email);
-                        
-                        currentUser.isAuthenticated = true;
-                        currentUser.email = email;
-                 
-                   
-                       
-                        LoadPage('/modules/massage.html', context, initializeChatPage);
-                        console.log('текущий токен:', TOKEN);
-                        onLoadAuth;
-                    } else {
-                        showError('Токен не получен в ответе', JSON.stringify(response));
-                    }
-                } else if (xhr.status === 422) {
-                    showError('Неверные данные запроса');
-                } else if (xhr.status === 401) {
-                    showError('Несанкционированный доступ');
-                } else if(xhr.status===403){
-                    showError('Доступ запрещен');
-                } else {
-                    showError(`Ошибка: ${xhr.status}`);
-                }
+            if (!emailInput || !passwordInput) {
+                showError('Не найдены поля ввода email или пароля');
+                return;
             }
-        };
 
-        xhr.onerror = function() {
-            showError('Ошибка сети при отправке запроса');
-        };
+            if (!emailInput.value || !passwordInput.value) {
+                showError('Поля электронной почты и пароля обязательны для заполнения.');
+                return;
+            }
 
-        xhr.send(req_data);
-    });
+            const email = emailInput.value.trim();
+            const pass = passwordInput.value.trim();
+
+            if (!email || !pass) {
+                showError('Электронная почта и пароль не могут быть пустыми');
+                return;
+            }
+
+            req_data.append('email', email);
+            req_data.append('pass', pass);
+
+            let xhr = new XMLHttpRequest();
+            let url = `${HOST}/auth/`;
+            xhr.open("POST", url, true);
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.Data) {
+                                setToken(response.token);
+                                localStorage.setItem('userEmail', email);
+                                currentUser.isAuthenticated = true;
+                                currentUser.email = email;
+                                LoadPage('/modules/massage.html', context, initializeChatPage);
+                            } else {
+                                showError('Токен не получен в ответе');
+                            }
+                        } catch (e) {
+                            showError('Ошибка обработки ответа сервера');
+                        }
+                    } else if (xhr.status === 422) {
+                        showError('Неверные данные запроса');
+                    } else if (xhr.status === 401) {
+                        showError('Несанкционированный доступ');
+                    } else if (xhr.status === 403) {
+                        showError('Доступ запрещен');
+                    } else {
+                        showError(`Ошибка: ${xhr.status}`);
+                    }
+                }
+            };
+
+            xhr.onerror = function() {
+                showError('Ошибка сети при отправке запроса');
+            };
+
+            xhr.send(req_data);
+        });
+    }
 
     function showError(message) {
         const errorBlock = elementsPage('.message--block');
@@ -237,7 +244,7 @@ function onLoadAuth() {
     }
 }
 
-// В функции DoRegist изменим обработчик успешной регистрации:
+// Регистрация
 function DoRegist() {
     const registerBtn = elementsPage('.register');
     if (!registerBtn) return;
@@ -283,32 +290,27 @@ function DoRegist() {
    
         xhr.onload = function() {
             if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                if (response.token) {
-                   
-                    localStorage.setItem('regEmail', email);
-                    localStorage.setItem('regPass', pass);
-                    
-                    // Переходим на страницу авторизации
-                    LoadPage('/modules/authorization.html', context, function() {
-                       
-                        const emailInput = elementsPage('input[name="email"]');
-                        const passInput = elementsPage('input[name="pass"]');
-                     
-                        
-                        if (emailInput && passInput) {
-                            emailInput.value = localStorage.getItem('regEmail') || '';
-                            passInput.value = localStorage.getItem('regPass') || '';
-                            
-                            
-                            
-                        }
-                        
-                        // Очищаем временные данные
-                        localStorage.removeItem('regEmail');
-                        localStorage.removeItem('regPass');
-                    });
-                } 
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.token) {
+                        localStorage.setItem('regEmail', email);
+                        localStorage.setItem('regPass', pass);
+                        LoadPage('/modules/authorization.html', context, function() {
+                            const emailInput = elementsPage('input[name="email"]');
+                            const passInput = elementsPage('input[name="pass"]');
+                            if (emailInput && passInput) {
+                                emailInput.value = localStorage.getItem('regEmail') || '';
+                                passInput.value = localStorage.getItem('regPass') || '';
+                            }
+                            localStorage.removeItem('regEmail');
+                            localStorage.removeItem('regPass');
+                        });
+                    } else {
+                        showRegError('Регистрация завершена, но токен не получен');
+                    }
+                } catch (e) {
+                    showRegError('Ошибка обработки ответа сервера');
+                }
             } else if (xhr.status === 401) {
                 showRegError('Несанкционированный доступ');
             } else if (xhr.status === 422) {
@@ -334,32 +336,23 @@ function DoRegist() {
         }
     }
 }
-////////////////////////////конец регистрации////////////////////////////////////////////////////
 
 function UserFiles() {
     console.log('UserFiles function called');
 }
 
 function initializeChatPage() {
-  
     if (!currentUser.isAuthenticated || !TOKEN) {
         checkAuthState();
         return;
     }
     
- 
     console.log('Chat page initialized for user:', currentUser.email);
     
-    // Пример: добавление обработчика выхода
     const logoutBtn = elementsPage('.logout-btn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
-            TOKEN = '';
-            currentUser.isAuthenticated = false;
-            currentUser.email = '';
-            LoadPage('/modules/authorization.html', context, onLoadAuth);
-        });
+        logoutBtn.addEventListener('click', logout);
     }
+    
+    // Здесь можно добавить дополнительную логику инициализации чата
 }
