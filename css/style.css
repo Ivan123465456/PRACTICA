@@ -144,3 +144,287 @@ body {
 /*начало message*/
 
 /*Profile*/
+
+/*message*/
+   *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        .telegram-ui {
+            display: flex;
+            max-width: 1200px;
+            height: 800px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        /* Сайдбар с чатами */
+        .sidebar {
+            width: 350px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #e1e1e1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Шапка с поиском */
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: #0088cc;
+            color: white;
+        }
+        
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8e8e93;
+            pointer-events: none;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 8px 15px 8px 38px;
+            border-radius: 18px;
+            border: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            font-size: 14px;
+            color: white;
+            transition: all 0.2s;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        
+        /* Список чатов */
+        .chat-list {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        
+        .chat-item {
+            display: flex;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e1e1e1;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .chat-item:hover {
+            background: #e6e6e6;
+        }
+        
+        .chat-item.active {
+            background: #e1f3fb;
+        }
+        
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+        
+        .chat-info {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        
+        .chat-name {
+            font-weight: 500;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-time {
+            font-size: 12px;
+            color: #8e8e93;
+            margin-left: 8px;
+            flex-shrink: 0;
+        }
+        
+        .chat-preview {
+            display: flex;
+            font-size: 13px;
+            color: #8e8e93;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-preview-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* Основное окно чата */
+        .chat-window {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #e6ebee;
+        }
+        
+        .chat-header {
+            padding: 12px 16px;
+            background-color: #0088cc;
+            color: white;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        
+        .chat-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+        
+        .chat-header-info {
+            flex-grow: 1;
+        }
+        
+        .chat-header-name {
+            font-weight: 500;
+        }
+        
+        .chat-header-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            padding: 16px;
+            overflow-y: auto;
+            background-image: url('https://web.telegram.org/a/chat-bg-pattern-light.png');
+            background-color: #e6ebee;
+        }
+        
+        .message {
+            max-width: 70%;
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .message-incoming {
+            background-color: white;
+            align-self: flex-start;
+            border-top-left-radius: 0;
+        }
+        
+        .message-outgoing {
+            background-color: #dcf8c6;
+            align-self: flex-end;
+            border-top-right-radius: 0;
+            margin-left: auto;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #8e8e93;
+            text-align: right;
+            margin-top: 4px;
+        }
+        
+        .message-input-container {
+            padding: 12px 16px;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e1e1e1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message-input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border: 1px solid #e1e1e1;
+            outline: none;
+            font-size: 14px;
+            resize: none;
+            max-height: 100px;
+        }
+        
+        .send-button {
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Иконки */
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Пустое состояние чата */
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8e8e93;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .empty-chat-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }

@@ -335,10 +335,29 @@ function DoRegist() {
             btnReg.textContent = message;
         }
     }
+    outReg();
 }
-
+/////////////////////////////
 function UserFiles() {
     console.log('UserFiles function called');
+}
+function outMessage(){
+    const exitBtn = document.getElementById('exit');
+    if(exitBtn){
+        exitBtn.addEventListener('click',function(){
+            logout();
+        });
+    }
+    
+}
+
+function outReg(){
+    const exitReg = document.getElementById('exitR');
+    if (exitReg){
+        exitReg.addEventListener('click',function(){
+               LoadPage('/modules/authorization.html', context, onLoadAuth);
+        });
+    }
 }
 
 function initializeChatPage() {
@@ -354,5 +373,6 @@ function initializeChatPage() {
         logoutBtn.addEventListener('click', logout);
     }
     
-    // Здесь можно добавить дополнительную логику инициализации чата
+   outMessage();
+
 }
