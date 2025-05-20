@@ -412,6 +412,17 @@ function initializeProfilePage() {
         });
     }
 }
+    const clear = elementsPage('#clear-prof');
+    if(clear){
+        clear.addEventListener('click',function(){
+            clear.removeItem = emailInput;
+            clear.removeItem = famInput;
+            clear.removeItem = nameInput;
+            clear.removeItem = otchInput;
+        });
+        
+
+    }
 
 
 function ExitProfile() {
