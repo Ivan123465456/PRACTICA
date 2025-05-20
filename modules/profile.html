@@ -1,27 +1,92 @@
-<div class="profile">
-    <h1 class="section-header">Личные файлы пользователя</h1>
-    
-<div class="profile">
-    <h1 class="section-header">Личные файлы пользователя</h1>
-    
-    <div class="user-chats">
-        <h2>Ваши чаты</h2>
-        <div class="chat-list"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .profile-info {
+            margin-bottom: 20px;
+        }
+        .profile-field {
+            margin-bottom: 10px;
+        }
+        .profile-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .profile-field input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .profile-actions {
+            text-align: center;
+        }
+        .profile-actions button {
+            padding: 8px 20px;
+            background-color: #0088cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль</title>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <img src="img/free-icon-user-1946429.png" alt="Аватар" height="150">
+            </div>
+            <h1>Мой профиль</h1>
+        </div>
+        
+        <div class="profile-info">
+            <div class="profile-field">
+                <label for="email">Email</label>
+                <input type="text" id="email" readonly>
+            </div>
+            <div class="profile-field">
+                <label for="fam">Фамилия</label>
+                <input type="text" id="fam">
+            </div>
+            <div class="profile-field">
+                <label for="name">Имя</label>
+                <input type="text" id="name">
+            </div>
+            <div class="profile-field">
+                <label for="otch">Отчество</label>
+                <input type="text" id="otch">
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <button id="save-profile">Сохранить</button>
+            <button id="exit-prof">Выйти</button>
+        </div>
     </div>
-   
-    <div class="user-files" >
-        <table>
-            <thead>
-                <th>Пароль</th>
-                <th>фамилия</th>
-                <th>Имя</th>
-                <th>телефон</th>
-                <th>Отчество</th>
-                <th>фото</th>
-            </thead>
-            <tbody>
-
-            </tbody>
-        </table>
-    </div>
-</div>
+</body>
+</html>

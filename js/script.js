@@ -234,7 +234,10 @@ function onLoadAuth() {
 
             xhr.send(req_data);
         });
+       
     }
+
+     Profile();
 
     function showError(message) {
         const errorBlock = elementsPage('.message--block');
@@ -242,6 +245,7 @@ function onLoadAuth() {
             errorBlock.textContent = message;
         }
     }
+      exitProfile();
 }
 
 // Регистрация
@@ -337,6 +341,17 @@ function DoRegist() {
     }
     outReg();
 }
+    function Profile(){
+        const enterProf = document.getElementById('profile');
+        if(enterProf){
+            enterProf.addEventListener('click',function(){
+                 LoadPage('/modules/authorization.html', context, onLoadAuth);
+            });
+        };
+        
+        
+    }
+    
 /////////////////////////////
 function UserFiles() {
     console.log('UserFiles function called');
@@ -360,6 +375,55 @@ function outReg(){
     }
 }
 
+function Profile() {
+    const prof = elementsPage('#profi'); 
+    if (prof) {
+        prof.addEventListener('click', function() {
+                LoadPage('/modules/profile.html', context, initializeProfilePage);
+        });
+    }
+}
+
+// Добавляем функцию инициализации страницы профиля
+function initializeProfilePage() {
+
+    const emailInput = elementsPage('#email');
+    const famInput = elementsPage('#fam');
+    const nameInput = elementsPage('#name');
+    const otchInput = elementsPage('#otch');
+    
+    if (emailInput) emailInput.value = currentUser.email || '';
+    
+    
+    // Обработчик кнопки выхода
+    const exitProfBtn = elementsPage('#exit-prof');
+    if (exitProfBtn) {
+        exitProfBtn.addEventListener('click', function() {
+            logout();
+        });
+    }
+    
+    // Обработчик кнопки сохранения
+    const saveProfBtn = elementsPage('#save-profile');
+    if (saveProfBtn) {
+        saveProfBtn.addEventListener('click', function() {
+           
+            alert('Профиль сохранен');
+        });
+    }
+}
+
+
+function ExitProfile() {
+    const exit = elementsPage('#exit-prof'); 
+    if (exit) {
+        exit.addEventListener('click', function() {
+            logout(); 
+        });
+    }
+}
+
+
 function initializeChatPage() {
     if (!currentUser.isAuthenticated || !TOKEN) {
         checkAuthState();
@@ -372,7 +436,21 @@ function initializeChatPage() {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', logout);
     }
-    
-   outMessage();
 
+    // Инициализируем кнопку профиля в чате
+    const profileBtn = elementsPage('#profile-btn');
+    if (!profileBtn) {
+        // Если кнопки нет в разметке, создаем ее
+        const btn = createContent('button', 'Профиль', elementsPage('.chat-header'));
+        btn.id = 'profile-btn';
+        btn.addEventListener('click', function() {
+            LoadPage('/modules/profile.html', context, initializeProfilePage);
+        });
+    } else {
+        profileBtn.addEventListener('click', function() {
+            LoadPage('/modules/profile.html', context, initializeProfilePage);
+        });
+    }
+    
+    outMessage();
 }
