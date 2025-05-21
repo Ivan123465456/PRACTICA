@@ -1,7 +1,5 @@
 // начало
-function parseJwt(){
-    var ba
-}
+
 
 
 function elementsPage(sel) {
@@ -248,7 +246,7 @@ function onLoadAuth() {
       exitProfile();
 }
 
-// Регистрация
+// Регистрация............................................................
 function DoRegist() {
     const registerBtn = elementsPage('.register');
     if (!registerBtn) return;
@@ -384,6 +382,9 @@ function Profile() {
     }
 }
 
+
+
+
 // Добавляем функцию инициализации страницы профиля
 function initializeProfilePage() {
 
@@ -412,19 +413,39 @@ function initializeProfilePage() {
         });
     }
 }
-    const clear = elementsPage('#clear-prof');
-    if(clear){
-        clear.addEventListener('click',function(){
-            clear.removeItem = emailInput;
-            clear.removeItem = famInput;
-            clear.removeItem = nameInput;
-            clear.removeItem = otchInput;
+///////////////////очищение..............................
+function setupClearProfile() {
+    const clearBtn = elementsPage('#clear-prof');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            clearProfile();
         });
-        
-
     }
+}
 
 
+        // Функция для очистки полей профиля
+        function clearProfile() {
+   
+            const inputs = [
+                elementsPage('#email'),
+                elementsPage('#fam'),
+                elementsPage('#name'),
+                elementsPage('#otch')
+            ];
+            
+        
+            inputs.forEach(input => {
+                if(input) input.value = '';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupClearProfile();
+            
+            
+        });
+//////////////////////////выход.....................
 function ExitProfile() {
     const exit = elementsPage('#exit-prof'); 
     if (exit) {
@@ -448,20 +469,7 @@ function initializeChatPage() {
         logoutBtn.addEventListener('click', logout);
     }
 
-    // Инициализируем кнопку профиля в чате
-    const profileBtn = elementsPage('#profile-btn');
-    if (!profileBtn) {
-        // Если кнопки нет в разметке, создаем ее
-        const btn = createContent('button', 'Профиль', elementsPage('.chat-header'));
-        btn.id = 'profile-btn';
-        btn.addEventListener('click', function() {
-            LoadPage('/modules/profile.html', context, initializeProfilePage);
-        });
-    } else {
-        profileBtn.addEventListener('click', function() {
-            LoadPage('/modules/profile.html', context, initializeProfilePage);
-        });
-    }
-    
+   
+  
     outMessage();
 }

@@ -18,7 +18,7 @@ body {
     display: none;
 }
 
-/* РЕГИСРАЦИЯ НАЧАЛО */
+/* --------------------------------------------РЕГИСРАЦИЯ НАЧАЛО-------------------------- */
 .registration-block {
     width: 400px;
     height: auto; 
@@ -80,7 +80,7 @@ body {
 /* РЕГИСТРАЦИЯ КОНЕЦ */
 
 
-/* АВТОРИЗАЦИЯ НАЧАЛО */
+/* ----------------------------------------АВТОРИЗАЦИЯ НАЧАЛО------------------------------ */
 .authorization-block {
     justify-content: center;
     text-align: center;
@@ -143,9 +143,9 @@ body {
 
 /*начало message*/
 
-/*Profile*/
 
-/*message*/
+
+/*---------------------------------------message-------------------------------------------*/
    *{
             margin: 0;
             padding: 0;
@@ -428,4 +428,80 @@ body {
             font-size: 60px;
             margin-bottom: 20px;
         }
-        /*профиль*/
+        .create-chat{
+            padding: 10px 60px;
+            
+        }
+         .create-chat button{
+            color: white;
+            background-color: #0088cc;
+            border: #0088cc;
+            border-radius: 40%;
+            padding: 4px;
+         }
+
+        /*-----------------------профиль-------------------------------*/
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-avatar img {
+            border-radius: 50%;
+            border: 2px solid #ddd;
+        }
+        
+        .profile-info {
+            margin-bottom: 20px;
+        }
+        
+        .profile-field {
+            margin-bottom: 15px;
+        }
+        
+        .profile-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .profile-field input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .profile-actions button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        #save-profile {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        #exit-prof {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        #clear-prof {
+            background-color: #2196F3;
+            color: white;
+        }
