@@ -442,10 +442,12 @@ body {
 
         /*-----------------------профиль-------------------------------*/
         .profile-container {
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 50px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             font-family: Arial, sans-serif;
+            border-radius: 20px;
         }
         
         .profile-header {
@@ -460,6 +462,7 @@ body {
         
         .profile-info {
             margin-bottom: 20px;
+            
         }
         
         .profile-field {

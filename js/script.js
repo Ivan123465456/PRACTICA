@@ -385,6 +385,7 @@ function Profile() {
 
 
 
+
 // Добавляем функцию инициализации страницы профиля
 function initializeProfilePage() {
 
@@ -394,6 +395,9 @@ function initializeProfilePage() {
     const otchInput = elementsPage('#otch');
     
     if (emailInput) emailInput.value = currentUser.email || '';
+    if (famInput) emailInput.value = '';
+    if (nameInput) nameInput.value = '';
+    if (otchInput) otchInput.value = '';
     
     
     // Обработчик кнопки выхода
@@ -413,39 +417,28 @@ function initializeProfilePage() {
         });
     }
 }
-///////////////////очищение..............................
-function setupClearProfile() {
-    const clearBtn = elementsPage('#clear-prof');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
-            clearProfile();
-        });
-    }
-}
-
-
-        // Функция для очистки полей профиля
-        function clearProfile() {
-   
-            const inputs = [
-                elementsPage('#email'),
-                elementsPage('#fam'),
-                elementsPage('#name'),
-                elementsPage('#otch')
-            ];
-            
-        
-            inputs.forEach(input => {
-                if(input) input.value = '';
-            });
+    
+    //очистка
+    function clickDel(){
+        const btn = document.getElementById("clear-prof");
+        if(btn){
+            btn.addEventListener('click',clearProfile)
         }
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            setupClearProfile();
-            
-            
-        });
-//////////////////////////выход.....................
+    function clearProfile(){
+        const emailInput = elementsPage('#email');
+        const famInput = elementsPage('#fam');
+        const nameInput = elementsPage('#name');
+        const otchInput = elementsPage('#otch');
+
+
+        if(emailInput) emailInput.value='';
+        if(famInput) famInput.value='';
+        if(nameInput) nameInput.value='';
+        if(otchInput) otchInput.value='';
+    }
+//выход
 function ExitProfile() {
     const exit = elementsPage('#exit-prof'); 
     if (exit) {
@@ -455,6 +448,10 @@ function ExitProfile() {
     }
 }
 
+
+function createUser(){
+    
+}
 
 function initializeChatPage() {
     if (!currentUser.isAuthenticated || !TOKEN) {
