@@ -383,7 +383,28 @@ function Profile() {
 }
 
 
+function SendMessage(){
+    const sendmes = elementsPage('#send-button');
+    if(sendmes){
+        sendmes.addEventListener('click',function(){
+            Send_Message();
+        });
+    }
+}
 
+function Send_Message(){
+    
+    let xhr = new XMLHttpRequest();
+    let url =  `${HOST}/messages/`;
+    
+    
+    
+}
+
+
+function GetMessage(){
+    
+}
 
 
 // Добавляем функцию инициализации страницы профиля
@@ -398,8 +419,62 @@ function initializeProfilePage() {
     if (famInput) emailInput.value = '';
     if (nameInput) nameInput.value = '';
     if (otchInput) otchInput.value = '';
-    
-    
+
+
+
+    const deleteBtn = elementsPage('#deleteProf');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            if (confirm('Вы действительно хотите удалить свой профиль? Это действие нельзя отменить.')) {
+                deleteProfile();
+            }
+        });
+    }
+
+    function deleteProfile() {
+        const token = getToken();
+        if (!token) {
+            alert('Ошибка: пользователь не авторизован');
+            return;
+        }
+
+        let xhr = new XMLHttpRequest();
+        let url = `${HOST}/user/`;
+        xhr.open('DELETE', url, true);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.data) {
+                            alert('Профиль успешно удален');
+                            logout(); // Выходим после удаления
+                        } else {
+                            alert('Ошибка при удалении профиля: ' + (response.message || 'Неизвестная ошибка'));
+                        }
+                    } catch (e) {
+                        console.error('Ошибка обработки ответа:', e);
+                        alert('Ошибка обработки ответа сервера');
+                    }
+                } else if (xhr.status === 401) {
+                    alert('Ошибка авторизации. Пожалуйста, войдите снова.');
+                    logout();
+                } else {
+                    alert(`Ошибка удаления профиля. Статус: ${xhr.status}`);
+                }
+            }
+        };
+        
+        xhr.onerror = function() {
+            alert('Ошибка сети при попытке удалить профиль');
+        };
+        
+        xhr.send();
+    }
+
+
     // Обработчик кнопки выхода
     const exitProfBtn = elementsPage('#exit-prof');
     if (exitProfBtn) {
@@ -418,26 +493,8 @@ function initializeProfilePage() {
     }
 }
     
-    //очистка
-    function clickDel(){
-        const btn = document.getElementById("clear-prof");
-        if(btn){
-            btn.addEventListener('click',clearProfile)
-        }
-    }
-
-    function clearProfile(){
-        const emailInput = elementsPage('#email');
-        const famInput = elementsPage('#fam');
-        const nameInput = elementsPage('#name');
-        const otchInput = elementsPage('#otch');
 
 
-        if(emailInput) emailInput.value='';
-        if(famInput) famInput.value='';
-        if(nameInput) nameInput.value='';
-        if(otchInput) otchInput.value='';
-    }
 //выход
 function ExitProfile() {
     const exit = elementsPage('#exit-prof'); 
@@ -466,7 +523,8 @@ function initializeChatPage() {
         logoutBtn.addEventListener('click', logout);
     }
 
-   
+
+
   
     outMessage();
 }

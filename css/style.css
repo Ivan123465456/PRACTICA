@@ -500,11 +500,15 @@ body {
         }
         
         #exit-prof {
-            background-color: #f44336;
+            background-color: #abad25;
             color: white;
         }
         
-        #clear-prof {
+        #clearprof {
             background-color: #2196F3;
+            color: white;
+        }
+        #deleteProf{
+            background-color:rgb(238, 24, 24) ;
             color: white;
         }
