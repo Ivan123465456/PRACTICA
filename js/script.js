@@ -382,7 +382,7 @@ function Profile() {
     }
 }
 
-
+///////////////////////////////
 function SendMessage(){
     const sendmes = elementsPage('#send-button');
     if(sendmes){
@@ -396,7 +396,7 @@ function Send_Message(){
     
     let xhr = new XMLHttpRequest();
     let url =  `${HOST}/messages/`;
-    
+    xhr.open('POST',url,true)
     
     
 }
@@ -405,10 +405,12 @@ function Send_Message(){
 function GetMessage(){
     
 }
-
+///////////////////////////////////
 
 // Добавляем функцию инициализации страницы профиля
 function initializeProfilePage() {
+
+    
 
     const emailInput = elementsPage('#email');
     const famInput = elementsPage('#fam');
@@ -510,6 +512,7 @@ function createUser(){
     
 }
 
+///////////////////////////////////////////////////////////// чат 
 function initializeChatPage() {
     if (!currentUser.isAuthenticated || !TOKEN) {
         checkAuthState();
@@ -523,8 +526,61 @@ function initializeChatPage() {
         logoutBtn.addEventListener('click', logout);
     }
 
+        // Обработчики для чатов
+    const chatItems = document.querySelectorAll('.chat-item');
+    chatItems.forEach(item => {
+        item.addEventListener('click', function() {
+            switchTochat(this);
+        });
+    });
 
+        // Инициализация первого чата как активного
+    if(chatItems.length>0){
+        switchTochat(chatItems[0]);
+    }
 
+    // Удаляем класс active у всех чатов
+    function switchTochat(){
+        document.querySelectorAll('chat-item').forEach(chat => {
+            chat.classList.remove('active');
+        });
+    }
+
+    // добавляем активность
+    chatElement.chatlist.add('active');
+
+    const userName = chatElement.querySelector('.chat-name').textContent.value;
+    const lastMessage = chatElement.querySelector('.chat-preview-text').textContent.value;
+    const lastMessageTime = chatElement.querySelector('.chat-time').textContent.value;
+    const avatarSrc = chatElement.querySelector('.chat-avatar').src;
+
+    updateChatHeader(userName,avatarSrc);
+    loadChatUsers(userName,lastMessage,lastMessageTime)
+
+    //обнова имени и авы
+    function updateChatHeader(){
+        const chatHeader = document.querySelector('.chat-header');
+        if (chatHeader){
+            const avatar = document.querySelector('.chat-avatar');
+            if (avatar){
+                avatar.src = avatarSrc;
+            }
+            const nameElement = document.querySelector('.chat-name');
+            if(nameElement){
+                nameElement.textContent = userName;
+            }
+        }
+    }
+
+    //очистка
+    function loadChatUsers(userName,lastMessage,lastMessageTime){
+        const conteiner = document.querySelector('chat-preview-text');
+        if (!conteiner) return;
+            conteiner.innerHTML = '';
+        }
+
+    
+    const 
   
     outMessage();
 }
