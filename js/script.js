@@ -383,142 +383,16 @@ function Profile() {
 }
 
 ///////////////////////////////
-function SendMessage(){
-    const sendmes = elementsPage('#send-button');
-    if(sendmes){
-        sendmes.addEventListener('click',function(){
-            Send_Message();
-        });
-    }
-}
 
-function Send_Message(){
-    
-    let xhr = new XMLHttpRequest();
-    let url =  `${HOST}/messages/`;
-    xhr.open('POST',url,true)
-    
-    
-}
-
-
-function GetMessage(){
-    
-}
 ///////////////////////////////////
 
 // Добавляем функцию инициализации страницы профиля
-function initializeProfilePage() {
-
-    
-
-    const emailInput = elementsPage('#email');
-    const famInput = elementsPage('#fam');
-    const nameInput = elementsPage('#name');
-    const otchInput = elementsPage('#otch');
-    
-    if (emailInput) emailInput.value = currentUser.email || '';
-    if (famInput) emailInput.value = '';
-    if (nameInput) nameInput.value = '';
-    if (otchInput) otchInput.value = '';
-
-
-
-    const deleteBtn = elementsPage('#deleteProf');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-            if (confirm('Вы действительно хотите удалить свой профиль? Это действие нельзя отменить.')) {
-                deleteProfile();
-            }
-        });
-    }
-
-    function deleteProfile() {
-        const token = getToken();
-        if (!token) {
-            alert('Ошибка: пользователь не авторизован');
-            return;
-        }
-
-        let xhr = new XMLHttpRequest();
-        let url = `${HOST}/user/`;
-        xhr.open('DELETE', url, true);
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.data) {
-                            alert('Профиль успешно удален');
-                            logout(); // Выходим после удаления
-                        } else {
-                            alert('Ошибка при удалении профиля: ' + (response.message || 'Неизвестная ошибка'));
-                        }
-                    } catch (e) {
-                        console.error('Ошибка обработки ответа:', e);
-                        alert('Ошибка обработки ответа сервера');
-                    }
-                } else if (xhr.status === 401) {
-                    alert('Ошибка авторизации. Пожалуйста, войдите снова.');
-                    logout();
-                } else {
-                    alert(`Ошибка удаления профиля. Статус: ${xhr.status}`);
-                }
-            }
-        };
-        
-        xhr.onerror = function() {
-            alert('Ошибка сети при попытке удалить профиль');
-        };
-        
-        xhr.send();
-    }
-
-
-    // Обработчик кнопки выхода
-    const exitProfBtn = elementsPage('#exit-prof');
-    if (exitProfBtn) {
-        exitProfBtn.addEventListener('click', function() {
-            logout();
-        });
-    }
-    
-    // Обработчик кнопки сохранения
-    const saveProfBtn = elementsPage('#save-profile');
-    if (saveProfBtn) {
-        saveProfBtn.addEventListener('click', function() {
-           
-            alert('Профиль сохранен');
-        });
-    }
-}
-    
-
-
-//выход
-function ExitProfile() {
-    const exit = elementsPage('#exit-prof'); 
-    if (exit) {
-        exit.addEventListener('click', function() {
-            logout(); 
-        });
-    }
-}
-
-
-function createUser(){
-    
-}
-
-///////////////////////////////////////////////////////////// чат 
 function initializeChatPage() {
     if (!currentUser.isAuthenticated || !TOKEN) {
         checkAuthState();
         return;
     }
-    
+
     console.log('Chat page initialized for user:', currentUser.email);
     
     const logoutBtn = elementsPage('.logout-btn');
@@ -526,61 +400,167 @@ function initializeChatPage() {
         logoutBtn.addEventListener('click', logout);
     }
 
-        // Обработчики для чатов
+    // Инициализация чатов
+    initChats();
+    
+    // Инициализация обработчиков сообщений
+    initMessageHandlers();
+    
+    Profile();
+    outMessage();
+}
+
+function initChats() {
+    // Обработчики для чатов
     const chatItems = document.querySelectorAll('.chat-item');
     chatItems.forEach(item => {
         item.addEventListener('click', function() {
-            switchTochat(this);
+            // Удаляем класс active у всех чатов
+            document.querySelectorAll('.chat-item').forEach(chat => {
+                chat.classList.remove('active');
+            });
+            
+            // Добавляем активность текущему чату
+            this.classList.add('active');
+            
+            // Обновляем заголовок чата
+            updateChatHeader(this);
+            
+            // Загружаем сообщения для выбранного чата
+            loadChatMessages(this);
         });
     });
 
-        // Инициализация первого чата как активного
-    if(chatItems.length>0){
-        switchTochat(chatItems[0]);
+    // Активируем первый чат, если есть
+    if (chatItems.length > 0) {
+        chatItems[0].classList.add('active');
+        updateChatHeader(chatItems[0]);
+        loadChatMessages(chatItems[0]);
     }
+}
 
-    // Удаляем класс active у всех чатов
-    function switchTochat(){
-        document.querySelectorAll('chat-item').forEach(chat => {
-            chat.classList.remove('active');
-        });
-    }
+function updateChatHeader(chatElement) {
+    const chatHeader = elementsPage('.chat-header');
+    if (!chatHeader) return;
 
-    // добавляем активность
-    chatElement.chatlist.add('active');
-
-    const userName = chatElement.querySelector('.chat-name').textContent.value;
-    const lastMessage = chatElement.querySelector('.chat-preview-text').textContent.value;
-    const lastMessageTime = chatElement.querySelector('.chat-time').textContent.value;
+    const userName = chatElement.querySelector('.chat-name').textContent;
     const avatarSrc = chatElement.querySelector('.chat-avatar').src;
 
-    updateChatHeader(userName,avatarSrc);
-    loadChatUsers(userName,lastMessage,lastMessageTime)
+    chatHeader.innerHTML = `
+        <img src="${avatarSrc}" class="chat-header-avatar">
+      
+        <div class="chat-header-info">
+            <div class="chat-header-name">${userName}</div>
+            <div class="chat-header-status">был(а) в сети 5 минут назад</div>
+        </div>
+        <button id="exit">выйти</button>
+    `;
 
-    //обнова имени и авы
-    function updateChatHeader(){
-        const chatHeader = document.querySelector('.chat-header');
-        if (chatHeader){
-            const avatar = document.querySelector('.chat-avatar');
-            if (avatar){
-                avatar.src = avatarSrc;
+    // Переинициализируем кнопку выхода
+    outMessage();
+}
+
+function loadChatMessages(chatElement) {
+    const chatMessages = elementsPage('.chat-messages');
+    if (!chatMessages) return;
+    
+    // Очищаем предыдущие сообщения
+    chatMessages.innerHTML = '';
+    
+
+    // Временно добавляем тестовые сообщения
+    const userName = chatElement.querySelector('.chat-name').textContent;
+    
+    // Входящее сообщение
+    const incomingMsg = document.createElement('div');
+    incomingMsg.className = 'message incoming';
+    incomingMsg.innerHTML = `
+        <div class="message-content">Привет, как дела?</div>
+        <div class="message-time">${getCurrentTime()}</div>
+    `;
+    chatMessages.appendChild(incomingMsg);
+    
+    // Прокручиваем вниз
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function initMessageHandlers() {
+    const sendButton = elementsPage('.send-button');
+    const messageInput = elementsPage('.message-input');
+    
+    if (sendButton && messageInput) {
+        sendButton.addEventListener('click', function() {
+            sendMessage();
+        });
+        
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
-            const nameElement = document.querySelector('.chat-name');
-            if(nameElement){
-                nameElement.textContent = userName;
-            }
-        }
+        });
     }
+}
 
-    //очистка
-    function loadChatUsers(userName,lastMessage,lastMessageTime){
-        const conteiner = document.querySelector('chat-preview-text');
-        if (!conteiner) return;
-            conteiner.innerHTML = '';
-        }
+function sendMessage() {
+    const messageInput = elementsPage('.message-input');
+    if (!messageInput || !messageInput.value.trim()) return;
+
+    const messageText = messageInput.value.trim();
+    const chatMessages = elementsPage('.chat-messages');
+    
+    if (chatMessages) {
+        // Создаем элемент сообщения
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message outgoing';
+        messageElement.innerHTML = `
+            <div class="message-content">${messageText}</div>
+            <div class="message-time">${getCurrentTime()}</div>
+        `;
+        
+        // Добавляем сообщение в чат
+        chatMessages.appendChild(messageElement);
+        
+        // Очищаем поле ввода
+        messageInput.value = '';
+        
+        // Прокручиваем вниз
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+
+    }
+}
+
+function getCurrentTime() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function sendMessageToServer(messageText) {
+    const token = getToken();
+    if (!token) return;
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('POST', `${HOST}/messages/`, true);
 
     
-    const 
-  
-    outMessage();
+    const data = {
+        text: messageText,
+        chatId: getActiveChatId(),
+        timestamp: new Date().toISOString()
+    };
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            console.log('Message sent successfully');
+        } else {
+            console.error('Error sending message:', xhr.status);
+        }
+    };
+    
+    xhr.send(JSON.stringify(data));
+}
+
+function getActiveChatId() {
+    const activeChat = document.querySelector('.chat-item.active');
+    return activeChat ? activeChat.dataset.chatId || 'default' : 'default';
 }
