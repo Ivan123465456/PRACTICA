@@ -443,17 +443,21 @@ function updateChatHeader(chatElement) {
     const chatHeader = elementsPage('.chat-header');
     if (!chatHeader) return;
 
+  
     const userName = chatElement.querySelector('.chat-name').textContent;
     const avatarSrc = chatElement.querySelector('.chat-avatar').src;
+
+
 
     chatHeader.innerHTML = `
         <img src="${avatarSrc}" class="chat-header-avatar">
       
         <div class="chat-header-info">
+            <div class=""
             <div class="chat-header-name">${userName}</div>
             <div class="chat-header-status">был(а) в сети 5 минут назад</div>
         </div>
-        <button id="exit">выйти</button>
+
     `;
 
     // Переинициализируем кнопку выхода
@@ -469,7 +473,7 @@ function loadChatMessages(chatElement) {
     
 
     // Временно добавляем тестовые сообщения
-    const userName = chatElement.querySelector('.chat-name').textContent;
+    const userName = chatElement.querySelector('.chat-name').textContent.value;
     
     // Входящее сообщение
     const incomingMsg = document.createElement('div');
@@ -483,6 +487,7 @@ function loadChatMessages(chatElement) {
     // Прокручиваем вниз
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
 
 function initMessageHandlers() {
     const sendButton = elementsPage('.send-button');
@@ -525,10 +530,11 @@ function sendMessage() {
         
         // Прокручиваем вниз
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        
+        loadChatMessages();
 
     }
 }
+
 
 function getCurrentTime() {
     const now = new Date();
@@ -539,26 +545,32 @@ function sendMessageToServer(messageText) {
     const token = getToken();
     if (!token) return;
 
-    let xhr = new XMLHttpRequest();
-    xhr.open('POST', `${HOST}/messages/`, true);
+    const activeChat = document.querySelector('.chat-item.active');
+    if (!activeChat) return;
 
+    const chatId = activeChat.dataset.chatId || 'default';
     
-    const data = {
-        text: messageText,
-        chatId: getActiveChatId(),
-        timestamp: new Date().toISOString()
-    };
-    
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            console.log('Message sent successfully');
+    _post({
+        url: `${HOST}/messages/`,
+        data: JSON.stringify({
+            text: messageText,
+            chatId: chatId,
+            timestamp: new Date().toISOString()
+        })
+    },
+    (response, error) => {
+        if (error) {
+            console.error('Ошибка отправки сообщения:', error);
+            // Можно добавить уведомление пользователю
         } else {
-            console.error('Error sending message:', xhr.status);
+            console.log('Сообщение успешно отправлено:', response);
         }
-    };
-    
-    xhr.send(JSON.stringify(data));
+    });
+       xhr.send(JSON.stringify(data));
 }
+    
+ 
+
 
 function getActiveChatId() {
     const activeChat = document.querySelector('.chat-item.active');

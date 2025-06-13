@@ -267,6 +267,7 @@ body {
             display: flex;
             justify-content: space-between;
             margin-bottom: 4px;
+            
         }
         
         .chat-name {
@@ -325,10 +326,12 @@ body {
         
         .chat-header-info {
             flex-grow: 1;
+       
         }
         
         .chat-header-name {
             font-weight: 500;
+           
         }
         
         .chat-header-status {
