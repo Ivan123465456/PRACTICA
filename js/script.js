@@ -339,6 +339,7 @@ function DoRegist() {
     }
     outReg();
 }
+////////////////profile/////////////////////////
     function Profile(){
         const enterProf = document.getElementById('profile');
         if(enterProf){
@@ -382,56 +383,108 @@ function Profile() {
     }
 }
 
+
+
 ///////////////////////////////
 
-///////////////////////////////////
+function initializeProfilePage() {
+    token = getToken();
+    // причина вылета
+    // if (!currentUser.isAuthenticated || !TOKEN) {
+    //     checkAuthState();
+    //     return;
+    // }
+    //
+
+    console.log('Profile page initialized for user:', currentUser.email);
+    
+    // Заполняем данные профиля
+    fillProfileData();
+    
+    // Инициализируем кнопки
+    initProfileButtons();
+}
+
+function fillProfileData(){
+    const emailInput = elementsPage('#email');
+    if(emailInput) emailInput.value = currentUser.email;
+}
+function initProfileButtons() {
+    // Кнопка сохранения
+    const saveBtn = elementsPage('#save-profile');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveProfile);
+    }
+    
+    // Кнопка выхода
+    const exitBtn = elementsPage('#exit-prof');
+    if (exitBtn) {
+        exitBtn.addEventListener('click', logout);
+            
+    }
+    
+    // Кнопка удаления профиля
+    const deleteBtn = elementsPage('#deleteProf');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteProfile);
+    }
+}
+
+function saveProfile() {
+console.log('save');
+    
+}
+
+function deleteProfile() {
+    if (confirm('Вы уверены, что хотите удалить профиль?')) {
+        // Здесь можно добавить логику удаления профиля
+        alert('Функция удаления профиля будет реализована позже');
+    }
+}
 
 // Добавляем функцию инициализации страницы профиля
+
+
+
+
+
+
+
 function initializeChatPage() {
-    if (!currentUser.isAuthenticated || !TOKEN) {
-        checkAuthState();
-        return;
-    }
-
-    console.log('Chat page initialized for user:', currentUser.email);
+    console.log('Chat page initialized');
     
-    const logoutBtn = elementsPage('.logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
-
     // Инициализация чатов
     initChats();
     
     // Инициализация обработчиков сообщений
     initMessageHandlers();
     
-    Profile();
-    outMessage();
+    // Кнопка выхода
+    const logoutBtn = document.getElementById('exit');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            logout(); // Очищаем данные авторизации
+            LoadPage('/modules/authorization.html', context, onLoadAuth); // Загружаем страницу авторизации
+        });
+    }
 }
 
+
+
 function initChats() {
-    // Обработчики для чатов
     const chatItems = document.querySelectorAll('.chat-item');
     chatItems.forEach(item => {
         item.addEventListener('click', function() {
-            // Удаляем класс active у всех чатов
             document.querySelectorAll('.chat-item').forEach(chat => {
                 chat.classList.remove('active');
             });
             
-            // Добавляем активность текущему чату
             this.classList.add('active');
-            
-            // Обновляем заголовок чата
             updateChatHeader(this);
-            
-            // Загружаем сообщения для выбранного чата
             loadChatMessages(this);
         });
     });
 
-    // Активируем первый чат, если есть
     if (chatItems.length > 0) {
         chatItems[0].classList.add('active');
         updateChatHeader(chatItems[0]);
@@ -443,39 +496,25 @@ function updateChatHeader(chatElement) {
     const chatHeader = elementsPage('.chat-header');
     if (!chatHeader) return;
 
-  
     const userName = chatElement.querySelector('.chat-name').textContent;
     const avatarSrc = chatElement.querySelector('.chat-avatar').src;
 
-
-
     chatHeader.innerHTML = `
         <img src="${avatarSrc}" class="chat-header-avatar">
-      
         <div class="chat-header-info">
-            <div class=""
             <div class="chat-header-name">${userName}</div>
-            <div class="chat-header-status">был(а) в сети 5 минут назад</div>
+            <div class="chat-header-status">был(а) в сети ${getCurrentTime()}</div>
         </div>
-
     `;
-
-    // Переинициализируем кнопку выхода
-    outMessage();
 }
 
 function loadChatMessages(chatElement) {
     const chatMessages = elementsPage('.chat-messages');
     if (!chatMessages) return;
     
-    // Очищаем предыдущие сообщения
     chatMessages.innerHTML = '';
     
-
-    // Временно добавляем тестовые сообщения
-    const userName = chatElement.querySelector('.chat-name').textContent.value;
-    
-    // Входящее сообщение
+    // Тестовые сообщения
     const incomingMsg = document.createElement('div');
     incomingMsg.className = 'message incoming';
     incomingMsg.innerHTML = `
@@ -484,24 +523,18 @@ function loadChatMessages(chatElement) {
     `;
     chatMessages.appendChild(incomingMsg);
     
-    // Прокручиваем вниз
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-
+// Обработчики сообщений
 function initMessageHandlers() {
     const sendButton = elementsPage('.send-button');
     const messageInput = elementsPage('.message-input');
     
     if (sendButton && messageInput) {
-        sendButton.addEventListener('click', function() {
-            sendMessage();
-        });
-        
+        sendButton.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
+            if (e.key === 'Enter') sendMessage();
         });
     }
 }
@@ -514,65 +547,81 @@ function sendMessage() {
     const chatMessages = elementsPage('.chat-messages');
     
     if (chatMessages) {
-        // Создаем элемент сообщения
+        // Создаем и добавляем сообщение
         const messageElement = document.createElement('div');
         messageElement.className = 'message outgoing';
         messageElement.innerHTML = `
             <div class="message-content">${messageText}</div>
             <div class="message-time">${getCurrentTime()}</div>
         `;
-        
-        // Добавляем сообщение в чат
         chatMessages.appendChild(messageElement);
         
         // Очищаем поле ввода
         messageInput.value = '';
-        
-        // Прокручиваем вниз
         chatMessages.scrollTop = chatMessages.scrollHeight;
-        loadChatMessages();
-
+        
+        // Отправляем на сервер (без токена)
+        sendMessageToServer(messageText);
     }
 }
 
+function sendMessageToServer(messageText) {
+    const activeChat = document.querySelector('.chat-item.active');
+    const chatId = activeChat ? activeChat.dataset.chatId || 'default' : 'default';
+    
+    // Модифицированная версия без токена
+    _post({
+        url: `${HOST}/messages/`,
+        contentType: 'application/json',
+        data: JSON.stringify({
+            text: messageText,
+            chatId: chatId,
+            timestamp: new Date().toISOString()
+        })
+    }, (response, error) => {
+        if (error) {
+            console.error('Ошибка отправки сообщения:', error);
+        } else {
+            console.log('Сообщение отправлено (без аутентификации):', response);
+        }
+    });
+}
 
 function getCurrentTime() {
     const now = new Date();
     return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function sendMessageToServer(messageText) {
-    const token = getToken();
-    if (!token) return;
 
-    const activeChat = document.querySelector('.chat-item.active');
-    if (!activeChat) return;
 
-    const chatId = activeChat.dataset.chatId || 'default';
-    
-    _post({
-        url: `${HOST}/messages/`,
-        data: JSON.stringify({
-            text: messageText,
-            chatId: chatId,
-            timestamp: new Date().toISOString()
+//создание чатов, завтра продолжим
+function MakeChat_1(){
+    const ChatBtn = document.getElementById('join');
+    if (ChatBtn){
+        ChatBtn = addEventListener('click',function(){
+        MakeChat_2();
         })
-    },
-    (response, error) => {
-        if (error) {
-            console.error('Ошибка отправки сообщения:', error);
-            // Можно добавить уведомление пользователю
-        } else {
-            console.log('Сообщение успешно отправлено:', response);
-        }
-    });
-       xhr.send(JSON.stringify(data));
+    }
 }
-    
- 
+    function MakeChat_2(){
+        const chatInput = elementsPage('.join');
+        if(!chat.value); 
+        return;
 
+        
 
-function getActiveChatId() {
-    const activeChat = document.querySelector('.chat-item.active');
-    return activeChat ? activeChat.dataset.chatId || 'default' : 'default';
+        const chatMassage = document.createElement('div');
+
+        if(chatMassage){
+
+        }
+        
+
+    }
+
+// Инициализация приложения
+if (context) {
+    checkAuthState();
+} else {
+    console.error('Context element (.content) not found');
 }
