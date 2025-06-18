@@ -294,6 +294,7 @@ function DoRegist() {
             if (xhr.status === 200) {
                 try {
                     const response = JSON.parse(xhr.responseText);
+
                     if (response.token) {
                         localStorage.setItem('regEmail', email);
                         localStorage.setItem('regPass', pass);
@@ -605,17 +606,93 @@ function MakeChat_1(){
 }
     function MakeChat_2(){
         const chatInput = elementsPage('.join');
-        if(!chat.value); 
-        return;
+        if(!chat.value) return;
 
         
 
         const chatMassage = document.createElement('div');
-
-        if(chatMassage){
-
-        }
+        chatMassage.className = 'chat-item';
+        chatMassage.dataset.chatId = `chat-${Date.now()}`;
         
+            newChat.innerHTML = `
+        <img src="https://via.placeholder.com/50" class="chat-avatar" alt="Аватар чата">
+        <div class="chat-info">
+            <div class="chat-name">${chatName}</div>
+            <div class="chat-last-message">Новый чат</div>
+            <div class="chat-time">${getCurrentTime()}</div>
+            <button id='remove'>удалить</удалить>
+        </div>
+    `;
+
+function updateChatList(){
+    const activeChat = document.querySelector('.chat-item.active');
+    const activeChatid = activeChat ? activeChat.dataset.chatId:null;
+
+    setTimeout(() => {
+        // В реальном приложении здесь будет обработка ответа от сервера
+        const mockResponse = {
+            success: true,
+            chats: [
+                {
+                    id: 'chat-1',
+                    name: 'Общий чат',
+                    lastMessage: 'Новое сообщение в общем чате',
+                    time: getCurrentTime(),
+                    unread: 2
+                },
+                {
+                    id: 'chat-2',
+                    name: 'Рабочая группа',
+                    lastMessage: 'Задача выполнена',
+                    time: getCurrentTime(),
+                    unread: 0
+                },
+                {
+                    id: 'chat-3',
+                    name: 'Новый чат',
+                    lastMessage: 'Добро пожаловать!',
+                    time: getCurrentTime(),
+                    unread: 1
+                }
+            ]
+        };
+        
+        // Обновляем список чатов
+        renderChatsList(mockResponse.chats, activeChatId);
+    }, 500);
+}
+    // Функция для отрисовки списка чатов
+    function renderChatsList(chats,activeChatId){
+        const chatList = elementsPage('.chat-list');
+        if(!chatList) return;
+        
+        //сохраняет scroll position
+        const scrollPos = chatList.scrollTop
+
+        //очистка 
+        chatList.innerHTML = '';
+
+        //добавление каждый чат в список
+        chat.forEach(chat => {
+        const chatElement = document.createElement('div');
+        chatElement.className = `chat-item ${chat.id === activeChatId ? 'active' : ''}`;
+        chatElement.dataset.chatId = chat.id;
+
+        
+        });
+    }
+
+    newChat.addEventListener('click',function(e){
+        if(e.target.classList.constains('remove-chat')){
+            return;
+        }
+        document.querySelectorAll('.chat-item').forEach(chat => {
+            chat.classList.remove('active');
+        });
+        this.classList.add('active');
+        updateChatHeader(this);
+        loadChatMessages(this);
+    });
 
     }
 
